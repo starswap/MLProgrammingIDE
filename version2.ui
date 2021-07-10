@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ML Programming IDE</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout" rowstretch="1,15,0" columnstretch="10,2,40,20,20">
@@ -56,21 +56,19 @@
         <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
-        <stylestrategy>PreferDefault</stylestrategy>
+        <stylestrategy>PreferAntialias</stylestrategy>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 11pt &quot;Tlwg Mono&quot;;</string>
+       <string notr="true"/>
       </property>
       <property name="html">
        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Tlwg Mono'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu';&quot;&gt;Code&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu';&quot;&gt;will&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu';&quot;&gt;be typed here&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Code will be typed here&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
@@ -88,8 +86,15 @@ p, li { white-space: pre-wrap; }
         <height>30</height>
        </size>
       </property>
+      <property name="font">
+       <font>
+        <family>Tlwg Mono</family>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="styleSheet">
-       <string notr="true">font: 11pt &quot;Tlwg Mono&quot;;</string>
+       <string notr="true"/>
       </property>
       <property name="plainText">
        <string>e.g. python3 myFile.py</string>
@@ -197,7 +202,7 @@ p, li { white-space: pre-wrap; }
      </layout>
     </item>
     <item row="1" column="3">
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="sizeConstraint">
@@ -205,6 +210,12 @@ p, li { white-space: pre-wrap; }
         </property>
         <item>
          <widget class="QTextBrowser" name="textBrowser">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="html">
            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -218,33 +229,46 @@ p, li { white-space: pre-wrap; }
         <item>
          <widget class="QPushButton" name="pushButton">
           <property name="text">
-           <string>PushButton</string>
+           <string>Dismiss Suggestion</string>
           </property>
          </widget>
         </item>
        </layout>
       </item>
       <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
+       <widget class="QTextBrowser" name="textBrowser_2">
+        <property name="html">
+         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Second AI suggestion etc.	&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="text">
+         <string>Dismiss Suggestion</string>
         </property>
-       </spacer>
+       </widget>
       </item>
      </layout>
     </item>
     <item row="2" column="1" colspan="3">
      <widget class="QPlainTextEdit" name="outputWindow">
+      <property name="font">
+       <font>
+        <family>Tlwg Mono</family>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="styleSheet">
-       <string notr="true">background-color:black;color:white;
-font: 11pt &quot;Tlwg Mono&quot;;
-</string>
+       <string notr="true">background-color:black;color:white;</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
       <property name="plainText">
        <string>code output is displayed 
@@ -385,6 +409,9 @@ in this window
   <action name="actionEnter_Unit_Tests">
    <property name="text">
     <string>Enter Unit Tests</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="actionDisplay_Test_Results">

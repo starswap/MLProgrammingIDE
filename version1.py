@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'version2'
+# Form implementation generated from reading ui file 'version2.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -48,9 +48,9 @@ class Ui_MainWindow(object):
         font.setBold(False)
         font.setItalic(False)
         font.setWeight(50)
-        font.setStyleStrategy(QtGui.QFont.NoAntialias)
+        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.codeBox.setFont(font)
-        self.codeBox.setStyleSheet("font: 11pt \"Tlwg Mono\";")
+        self.codeBox.setStyleSheet("")
         self.codeBox.setObjectName("codeBox")
         self.gridLayout.addWidget(self.codeBox, 1, 2, 1, 1)
         self.runCommandBox = QtWidgets.QPlainTextEdit(self.centralwidget)
@@ -60,7 +60,12 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.runCommandBox.sizePolicy().hasHeightForWidth())
         self.runCommandBox.setSizePolicy(sizePolicy)
         self.runCommandBox.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.runCommandBox.setStyleSheet("font: 11pt \"Tlwg Mono\";")
+        font = QtGui.QFont()
+        font.setFamily("Tlwg Mono")
+        font.setBold(True)
+        font.setWeight(75)
+        self.runCommandBox.setFont(font)
+        self.runCommandBox.setStyleSheet("")
         self.runCommandBox.setObjectName("runCommandBox")
         self.gridLayout.addWidget(self.runCommandBox, 0, 2, 1, 2)
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -120,19 +125,31 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
+        font = QtGui.QFont()
+        font.setBold(False)
+        font.setWeight(50)
+        self.textBrowser.setFont(font)
         self.textBrowser.setObjectName("textBrowser")
         self.verticalLayout_3.addWidget(self.textBrowser)
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout_3.addWidget(self.pushButton)
         self.verticalLayout_2.addLayout(self.verticalLayout_3)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem)
+        self.textBrowser_2 = QtWidgets.QTextBrowser(self.centralwidget)
+        self.textBrowser_2.setObjectName("textBrowser_2")
+        self.verticalLayout_2.addWidget(self.textBrowser_2)
+        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.verticalLayout_2.addWidget(self.pushButton_2)
         self.gridLayout.addLayout(self.verticalLayout_2, 1, 3, 1, 1)
         self.outputWindow = QtWidgets.QPlainTextEdit(self.centralwidget)
-        self.outputWindow.setStyleSheet("background-color:black;color:white;\n"
-"font: 11pt \"Tlwg Mono\";\n"
-"")
+        font = QtGui.QFont()
+        font.setFamily("Tlwg Mono")
+        font.setBold(True)
+        font.setWeight(75)
+        self.outputWindow.setFont(font)
+        self.outputWindow.setStyleSheet("background-color:black;color:white;")
+        self.outputWindow.setReadOnly(True)
         self.outputWindow.setObjectName("outputWindow")
         self.gridLayout.addWidget(self.outputWindow, 2, 1, 1, 3)
         self.runButton = QtWidgets.QPushButton(self.centralwidget)
@@ -223,15 +240,13 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "ML Programming IDE"))
         self.codeBox.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Tlwg Mono\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Ubuntu\';\">Code</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Ubuntu\';\">will</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Ubuntu\';\">be typed here</span></p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Ubuntu\';\"><br /></p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Code will be typed here</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.runCommandBox.setPlainText(_translate("MainWindow", "e.g. python3 myFile.py"))
         self.label.setText(_translate("MainWindow", "Efficacy"))
         self.label_2.setText(_translate("MainWindow", "Efficiency"))
@@ -243,7 +258,13 @@ class Ui_MainWindow(object):
 "</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">This is where the AI\'s comments will go</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">        </p></body></html>"))
-        self.pushButton.setText(_translate("MainWindow", "PushButton"))
+        self.pushButton.setText(_translate("MainWindow", "Dismiss Suggestion"))
+        self.textBrowser_2.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Second AI suggestion etc.    </p></body></html>"))
+        self.pushButton_2.setText(_translate("MainWindow", "Dismiss Suggestion"))
         self.outputWindow.setPlainText(_translate("MainWindow", "code output is displayed \n"
 "in this window\n"
 ""))
@@ -265,5 +286,6 @@ class Ui_MainWindow(object):
         self.actionExecute_Project.setText(_translate("MainWindow", "Execute Project"))
         self.actionDisplay_Unit_Test_Results.setText(_translate("MainWindow", "Display Unit Test Results"))
         self.actionEnter_Unit_Tests.setText(_translate("MainWindow", "Enter Unit Tests"))
+        self.actionEnter_Unit_Tests.setShortcut(_translate("MainWindow", "Ctrl+T"))
         self.actionDisplay_Test_Results.setText(_translate("MainWindow", "Display Test Results"))
         self.actionShow_Tutoruial.setText(_translate("MainWindow", "Show Tutorial"))
