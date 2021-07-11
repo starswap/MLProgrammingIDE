@@ -1,2 +1,2 @@
-# MLProgrammingIDE
-Machine Learning programming IDE for Computer Science A Level NEA project.
+# ML(μλ)ProgrammingIDE
+Python Programming IDE for Computer Science A Level NEA project, using artificial intelligence.
