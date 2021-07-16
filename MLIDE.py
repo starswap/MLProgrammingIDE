@@ -8,6 +8,7 @@ import UI.EnterUnitTests
 import Objects.ProjectObject
 from pathlib import Path
 import CodeFeatures
+from Objects.HexagonObject import Hexagon
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestPopup(PyQt5.QtWidgets.QDialog):
@@ -70,9 +71,12 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
 		self.actionOpen_Project.triggered.connect(self.createCurrentProjectByOpening)
 		self.actionNew_Project.triggered.connect(self.createCurrentProjectByNew)
+		self.actionClose_IDE.triggered.connect(self.close)
 		self.activeFileTextbox.textChanged.connect(self.onChangeText)
 		
 		self.highlighter = CodeFeatures.PythonSyntaxHighlighter(self.activeFileTextbox)
+		self.justDeactivated = False
+		
 
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()))[0],True,self)
@@ -84,9 +88,21 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
 		self.actionSave_Project.triggered.connect(self.currentProject.save)
 
-	def onChangeText(self):
-		pass
-		
+	def onChangeText(self): #in display score module
+		if len(self.activeFileTextbox.toPlainText()) == 0:
+			self.EfficacyHexagon.deactivate(True)
+			self.EleganceHexagon.deactivate(True)
+			self.EfficiencyHexagon.deactivate(True)
+			self.ReadabilityHexagon.deactivate(True)
+			self.justDeactivated = True
+			
+		elif self.justDeactivated == True:
+			self.justDeactivated = False
+			self.EfficacyHexagon.activate(True)
+			self.EleganceHexagon.activate(True)
+			self.EfficiencyHexagon.activate(True)
+			self.ReadabilityHexagon.activate(True)		
+			
 	def showUnitTestEntry(self):
 		self.enterUnitTests = UnitTestPopup()
 		self.enterUnitTests.show()

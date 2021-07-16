@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>803</width>
+    <width>801</width>
     <height>638</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <string>ML Programming IDE</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout" rowstretch="1,15,0" columnstretch="10,2,40,20,20">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="1,15,0" columnstretch="10,2,45,20,20">
     <property name="horizontalSpacing">
      <number>0</number>
     </property>
@@ -79,23 +79,43 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
     <item row="0" column="4" rowspan="3">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="5,1,5,1,5,1,5,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="5,1,0,5,1,0,5,1,0,5,1,0">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
-       <widget class="QWidget" name="widget" native="true">
-        <widget class="QDial" name="dial">
-         <property name="geometry">
-          <rect>
-           <x>50</x>
-           <y>20</y>
-           <width>50</width>
-           <height>64</height>
-          </rect>
-         </property>
-        </widget>
+       <widget class="Hexagon" name="EfficacyHexagon" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="hexColor" stdset="0">
+         <string>#00FF00</string>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Efficacy</string>
         </property>
@@ -105,21 +125,57 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_2" native="true">
-        <widget class="QDial" name="dial_2">
-         <property name="geometry">
-          <rect>
-           <x>60</x>
-           <y>20</y>
-           <width>50</width>
-           <height>64</height>
-          </rect>
-         </property>
-        </widget>
+       <widget class="Line" name="line">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Hexagon" name="EfficiencyHexagon" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="hexColor" stdset="0">
+         <string>#0000FF</string>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Efficiency</string>
         </property>
@@ -129,21 +185,57 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_3" native="true">
-        <widget class="QDial" name="dial_3">
-         <property name="geometry">
-          <rect>
-           <x>60</x>
-           <y>30</y>
-           <width>50</width>
-           <height>64</height>
-          </rect>
-         </property>
-        </widget>
+       <widget class="Line" name="line_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Hexagon" name="EleganceHexagon" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="hexColor" stdset="0">
+         <string>#f542ad</string>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Elegance</string>
         </property>
@@ -153,26 +245,81 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_4" native="true">
-        <widget class="QDial" name="dial_4">
-         <property name="geometry">
-          <rect>
-           <x>60</x>
-           <y>20</y>
-           <width>50</width>
-           <height>64</height>
-          </rect>
-         </property>
-        </widget>
+       <widget class="Line" name="line_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Hexagon" name="ReadabilityHexagon" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="hexColor" stdset="0">
+         <string>#FF0000</string>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Readability</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
@@ -291,7 +438,7 @@ in this window
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>803</width>
+     <width>801</width>
      <height>22</height>
     </rect>
    </property>
@@ -305,6 +452,8 @@ in this window
     <addaction name="separator"/>
     <addaction name="actionNew_File"/>
     <addaction name="actionAdd_File_to_Project"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose_IDE"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -451,7 +600,23 @@ in this window
     <string>F12</string>
    </property>
   </action>
+  <action name="actionClose_IDE">
+   <property name="text">
+    <string>Close IDE</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Hexagon</class>
+   <extends>QWidget</extends>
+   <header>Objects.HexagonObject</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
