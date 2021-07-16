@@ -70,6 +70,9 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Code will be typed here&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
+      <property name="tabStopWidth">
+       <number>40</number>
+      </property>
      </widget>
     </item>
     <item row="0" column="4" rowspan="3">
@@ -265,7 +268,7 @@ in this window
      </widget>
     </item>
     <item row="0" column="2" colspan="2">
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="runCommandBox">
       <property name="font">
        <font>
         <family>Tlwg Mono</family>
@@ -328,11 +331,17 @@ in this window
     </property>
     <addaction name="actionShow_Tutorial"/>
    </widget>
+   <widget class="QMenu" name="menuPreferences">
+    <property name="title">
+     <string>Preferences</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuRun"/>
    <addaction name="menuUnit_Tests"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuPreferences"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_Project">

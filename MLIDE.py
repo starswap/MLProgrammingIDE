@@ -6,9 +6,8 @@ import UI.baseUI
 import UI.EnterUnitTests
 #import Objects.UnitTestObject
 import Objects.ProjectObject
-#from UnitTestObject import UnitTest
-#def test():
-#	print("hop")
+from pathlib import Path
+import CodeFeatures
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestPopup(PyQt5.QtWidgets.QDialog):
@@ -62,6 +61,7 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 #Implemented with help from https://pythonbasics.org/qt-designer-python/
 class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def __init__(self, parent=None):
+		#Move to UI file probs
 		super(MLIDE, self).__init__(parent)
 		self.setupUi(self)
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
@@ -69,13 +69,29 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	
 		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
 		self.actionOpen_Project.triggered.connect(self.createCurrentProjectByOpening)
-	
+		self.actionNew_Project.triggered.connect(self.createCurrentProjectByNew)
+		self.activeFileTextbox.textChanged.connect(self.onChangeText)
+		
+		self.highlighter = CodeFeatures.PythonSyntaxHighlighter(self.activeFileTextbox)
+
 	def createCurrentProjectByOpening(self):
-		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName()[0],True,self)
+		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()))[0],True,self)
+		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
+		self.actionSave_Project.triggered.connect(self.currentProject.save)
+
+	def createCurrentProjectByNew(self):
+		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QInputDialog.getText(self, "New Project","Please enter the name of the new project:")[0],False,self)
+		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
+		self.actionSave_Project.triggered.connect(self.currentProject.save)
+
+	def onChangeText(self):
+		pass
 		
 	def showUnitTestEntry(self):
 		self.enterUnitTests = UnitTestPopup()
 		self.enterUnitTests.show()
+	
+	
 def main():
 	app = PyQt5.QtWidgets.QApplication(sys.argv)
 	form = MLIDE()
