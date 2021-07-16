@@ -52,6 +52,7 @@ class Ui_MainWindow(object):
         self.activeFileTextbox.setFont(font)
         self.activeFileTextbox.setStyleSheet("")
         self.activeFileTextbox.setTabStopWidth(40)
+        self.activeFileTextbox.setAcceptRichText(False)
         self.activeFileTextbox.setObjectName("activeFileTextbox")
         self.gridLayout.addWidget(self.activeFileTextbox, 1, 2, 1, 1)
         self.verticalLayout = QtWidgets.QVBoxLayout()

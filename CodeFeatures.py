@@ -32,24 +32,6 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		formatToUse = PyQt5.QtGui.QTextCharFormat() #Create a QTextCharFormat object, which is an object specifying settings (e.g. color, boldness etc) of text, which we can apply to the textedit text.
 		colourToUse = PyQt5.QtGui.QColor() #Create a QColor object which is a Qt-defined colour, which can accept colours in a variety of formats including hex.
 		formatToUse.setFontWeight(PyQt5.QtGui.QFont.Bold) #Set the highlight format to be bold until we say otherwise.
-		
-	#Highlight strings
-		#Prepare the color format
-		colourToUse.setNamedColor(self.STRING)
-		formatToUse.setForeground(colourToUse)
-		#Look for single quotes that start a string
-		quotes = [q.start() for q in re.finditer("(?<!\\\)'",lineToHighlight)] #Because finditer returns a generator you have to convert to list. See https://stackoverflow.com/questions/4664850/how-to-find-all-occurrences-of-a-substring
-		#If there are an odd number of quotes in the line the string is as yet unfinished so we need to highlight all the way to the end of the line. This can be done by assumning there was a quote after the end of the line.
-		if len(quotes) % 2 == 1:
-			quotes.append(len(lineToHighlight))
-		for i in range(0,len(quotes),2): #For every other quote in the string
-			self.setFormat(quotes[i],quotes[i+1]-quotes[i]+1,formatToUse) #Highlight from this quote to the next one			
-		#Repeat for strings demarcated by double quotes
-		doubleQ = [q.start() for q in re.finditer("(?<!(\\\))(?<!(\"\"))\"",lineToHighlight)] #The regular expression used here and above uses negative lookbehind. This specifies a character (here a backslash) which cannot appear before the match. If it does the match is discarded. A second lookbehind discards any matches preceded by two more quotes because these are triple quotes, dealt with later. The main pattern aside from the lookbehinds simply looks for a ". When using this regex inside a Python string, some additional backslashes are added to escape the backslash which escapes the backslashes and then also to escape the quotes. The net result of this is that the syntax highlighting doesn't get messed up if you put an escaped quote inside a string,  
-		if len(doubleQ) % 2 == 1:
-			doubleQ.append(len(lineToHighlight))
-		for i in range(0,len(doubleQ),2):
-			self.setFormat(doubleQ[i],doubleQ[i+1]-doubleQ[i]+1,formatToUse)	
 
 	#Highlight language keywords
 		colourToUse.setNamedColor(self.KEYWORD) #Prepare the colour
@@ -78,6 +60,24 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		for boo in self.BOOL_HIGHLIGHTS:
 			for occur in re.finditer("(^|[\\t ])+("+boo+")",lineToHighlight,flags=re.MULTILINE): #this regex is the same as the above one
 				self.setFormat(occur.start(2),len(boo),formatToUse)
+
+	#Highlight strings
+		#Prepare the color format
+		colourToUse.setNamedColor(self.STRING)
+		formatToUse.setForeground(colourToUse)
+		#Look for single quotes that start a string
+		quotes = [q.start() for q in re.finditer("(?<!\\\)'",lineToHighlight)] #Because finditer returns a generator you have to convert to list. See https://stackoverflow.com/questions/4664850/how-to-find-all-occurrences-of-a-substring
+		#If there are an odd number of quotes in the line the string is as yet unfinished so we need to highlight all the way to the end of the line. This can be done by assumning there was a quote after the end of the line.
+		if len(quotes) % 2 == 1:
+			quotes.append(len(lineToHighlight))
+		for i in range(0,len(quotes),2): #For every other quote in the string
+			self.setFormat(quotes[i],quotes[i+1]-quotes[i]+1,formatToUse) #Highlight from this quote to the next one			
+		#Repeat for strings demarcated by double quotes
+		doubleQ = [q.start() for q in re.finditer("(?<!(\\\))(?<!(\"\"))\"",lineToHighlight)] #The regular expression used here and above uses negative lookbehind. This specifies a character (here a backslash) which cannot appear before the match. If it does the match is discarded. A second lookbehind discards any matches preceded by two more quotes because these are triple quotes, dealt with later. The main pattern aside from the lookbehinds simply looks for a ". When using this regex inside a Python string, some additional backslashes are added to escape the backslash which escapes the backslashes and then also to escape the quotes. The net result of this is that the syntax highlighting doesn't get messed up if you put an escaped quote inside a string,  
+		if len(doubleQ) % 2 == 1:
+			doubleQ.append(len(lineToHighlight))
+		for i in range(0,len(doubleQ),2):
+			self.setFormat(doubleQ[i],doubleQ[i+1]-doubleQ[i]+1,formatToUse)		
 	
 	#Highlight sharp comments
 		formatToUse.setFontWeight(PyQt5.QtGui.QFont.Normal)		

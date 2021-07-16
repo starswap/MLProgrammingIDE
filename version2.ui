@@ -73,6 +73,9 @@ p, li { white-space: pre-wrap; }
       <property name="tabStopWidth">
        <number>40</number>
       </property>
+      <property name="acceptRichText">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item row="0" column="4" rowspan="3">
