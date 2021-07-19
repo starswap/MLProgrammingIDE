@@ -73,20 +73,20 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.actionNew_Project.triggered.connect(self.createCurrentProjectByNew)
 		self.actionClose_IDE.triggered.connect(self.close)
 		self.activeFileTextbox.textChanged.connect(self.onChangeText)
-		
+		self.runCommandBox.textChanged.connect(self.onChangeText)
+										
 		self.highlighter = CodeFeatures.PythonSyntaxHighlighter(self.activeFileTextbox)
 		self.justDeactivated = False
-		
-
+	
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()))[0],True,self)
-		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
-		self.actionSave_Project.triggered.connect(self.currentProject.save)
-
+		self.setUpActions()
+		
 	def createCurrentProjectByNew(self):
-		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QInputDialog.getText(self, "New Project","Please enter the name of the new project:")[0],False,self)
-		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
-		self.actionSave_Project.triggered.connect(self.currentProject.save)
+		result = PyQt5.QtWidgets.QInputDialog.getText(self, "New Project","Please enter the name of the new project:")
+		if result[1] == True:
+			self.currentProject = Objects.ProjectObject.Project(result[0],False,self)
+			self.setUpActions()
 
 	def onChangeText(self): #in display score module
 		if len(self.activeFileTextbox.toPlainText()) == 0:
@@ -102,12 +102,32 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			self.EleganceHexagon.activate(True)
 			self.EfficiencyHexagon.activate(True)
 			self.ReadabilityHexagon.activate(True)		
+		
+		if hasattr(self, "currentProject"):
+			self.currentProject.saveToProject()
 			
 	def showUnitTestEntry(self):
 		self.enterUnitTests = UnitTestPopup()
 		self.enterUnitTests.show()
+		
+	def setUpActions(self):
+		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
+		self.actionSave_Project.triggered.connect(self.currentProject.save)
+		self.actionNew_File.triggered.connect(lambda : self.currentProject.newFile(PyQt5.QtWidgets.QInputDialog.getText(self, "New File","Please enter the name of the new file:")[0]))
+		self.actionAdd_File_to_Project.triggered.connect(lambda : self.currentProject.addFile(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()))[0]))			
+		self.actionExecute_Project.triggered.connect(self.currentProject.execute)
 	
-	
+		shortcut = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+Return"),self)
+		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+Enter"),self)
+		shortcut.activated.connect(self.currentProject.sendExecuteMessage)
+		shortcut2.activated.connect(self.currentProject.sendExecuteMessage)
+		shortcut3 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+R"),self)
+		shortcut3.activated.connect(self.runCommandBox.setFocus)
+		shortcut4 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+I"),self)		
+		shortcut4.activated.connect(self.shellInputBox.setFocus)
+		self.runButton.clicked.connect(self.currentProject.execute)
+		self.runCommandBox.returnPressed.connect(self.currentProject.execute)
+		self.inputButton.clicked.connect(self.currentProject.sendExecuteMessage)
 def main():
 	app = PyQt5.QtWidgets.QApplication(sys.argv)
 	form = MLIDE()

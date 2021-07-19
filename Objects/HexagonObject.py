@@ -19,7 +19,6 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 	def deactivate(self,force=False):
 		"""Deactivates the hexagon so its score is no longer calculated and displayed"""
 		self.active = False #Set it to inactive
-		self.mainColour = self.property("hexColor") #Save the colour so that when we set the colour to grey we can get it back again later.
 		self.setProperty("hexColor","#979c98") #Set the colour to grey
 		self.repaint() #Update the displayed hexagon on screen.
 		self.forceInactive = force #The force flag can be set to prevent the hexagon from being reactivated until the force flag is sent with the reactivate call. This allows us to hold the hexagons inactive when there is no code in the active file textbox for example, so that even if the user clicks on them they don't come back
@@ -32,7 +31,7 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 			else:
 				self.forceInactive = False # It was force inactive but now we unforce that before activating it again so that next time it gets deactivated it doesn't think it's forcing when it isn't
 		self.active = True #Reactivate
-		self.setProperty("hexColor",self.mainColour) #Bring the colour back
+		self.setProperty("hexColor",self.property("mainColor")) #Bring the colour back
 		self.repaint() #Display the Hexagon again. This also recalculates the score.
 		
 	def getScore(self):
