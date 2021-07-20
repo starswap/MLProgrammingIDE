@@ -99,15 +99,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		super(MLIDE, self).__init__(parent)
 		self.setupUi(self)
-
-
-		PyQt5.QtGui.QFontDatabase.addApplicationFont("fonts/Ubuntu-R.tff")
-		self.EfficiencyLabel.setFont(PyQt5.QtGui.QFont("Ubuntu"))
 		
 		font = PyQt5.QtGui.QFont("Monospace");
 		font.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
 		font.setPointSize(12)
-#		self.activeFileTextbox.setFont(font)
+		#self.activeFileTextbox.setFont(font)
 
 				
 							
