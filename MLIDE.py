@@ -105,20 +105,20 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			font-size: 11pt;
 		}
 		QTextEdit#activeFileTextbox {
-			font-family: 'Lucida Console',Monospace;
+			font-family: 'Consolas',Monospace;
 			font-size: 12pt;
 		}
 		QLineEdit#runCommandBox {
-			font-family: 'Lucida Console',Monospace;
+			font-family: 'Consolas',Monospace;
 			font-size: 11pt;
 			font-weight: bold;
 		}
 		QPlainTextEdit#shellInputBox {
-			font-family: 'Lucida Console',Monospace;
+			font-family: 'Consolas',Monospace;
 			font-size: 11pt;
 		}		
 		QPlainTextEdit#outputWindow {
-			font-family: 'Lucida Console',Monospace;
+			font-family: 'Consolas',Monospace;
 			font-size: 11pt;
 		}""")
 							
