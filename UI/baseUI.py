@@ -30,20 +30,21 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.runButton, 0, 0, 1, 1)
         self.runCommandBox = QtWidgets.QLineEdit(self.centralwidget)
         font = QtGui.QFont()
-        font.setFamily("Monospace")
+        font.setFamily("monospace")
         font.setBold(True)
         font.setWeight(75)
         self.runCommandBox.setFont(font)
+        self.runCommandBox.setStyleSheet("font-family: monospace;")
         self.runCommandBox.setText("")
         self.runCommandBox.setObjectName("runCommandBox")
         self.gridLayout.addWidget(self.runCommandBox, 0, 2, 1, 2)
         self.outputWindow = QtWidgets.QPlainTextEdit(self.centralwidget)
         font = QtGui.QFont()
-        font.setFamily("Monospace")
+        font.setFamily("monospace")
         font.setBold(True)
         font.setWeight(75)
         self.outputWindow.setFont(font)
-        self.outputWindow.setStyleSheet("background-color:black;color:white;")
+        self.outputWindow.setStyleSheet("background-color:black;color:white;font-family: monospace;")
         self.outputWindow.setReadOnly(True)
         self.outputWindow.setPlainText("Code output is displayed here.")
         self.outputWindow.setPlaceholderText("")
@@ -228,14 +229,14 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.activeFileTextbox.sizePolicy().hasHeightForWidth())
         self.activeFileTextbox.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setFamily("Monospace")
+        font.setFamily("monospace")
         font.setPointSize(11)
         font.setBold(False)
         font.setItalic(False)
         font.setWeight(50)
         font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.activeFileTextbox.setFont(font)
-        self.activeFileTextbox.setStyleSheet("")
+        self.activeFileTextbox.setStyleSheet("font-family: monospace;")
         self.activeFileTextbox.setTabStopWidth(40)
         self.activeFileTextbox.setAcceptRichText(False)
         self.activeFileTextbox.setObjectName("activeFileTextbox")
@@ -379,8 +380,8 @@ class Ui_MainWindow(object):
         self.activeFileTextbox.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Monospace\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+"</style></head><body style=\" font-family:\'monospace\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Monospace\';\"><br /></p></body></html>"))
         self.activeFileTextbox.setPlaceholderText(_translate("MainWindow", "Type your code here"))
         self.textBrowser.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
