@@ -96,14 +96,21 @@ class Settings(PyQt5.QtWidgets.QDialog):
 class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def __init__(self, parent=None):
 		#Move to UI file probs
-#		PyQt5.QtGui.QFontDatabase.addApplicationFont("fonts/UMR.tff")
+		
 		super(MLIDE, self).__init__(parent)
 		self.setupUi(self)
 
+
+		PyQt5.QtGui.QFontDatabase.addApplicationFont("fonts/Ubuntu-R.tff")
+		self.EfficiencyLabel.setFont(QFont("Ubuntu"))
+		
 		font = PyQt5.QtGui.QFont("Monospace");
 		font.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
-		self.activeFileTextbox.setFont(font)
-					
+		font.setPointSize(12)
+#		self.activeFileTextbox.setFont(font)
+
+				
+							
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
 		self.setWindowIcon(icon)		
 	
