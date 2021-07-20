@@ -388,7 +388,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Monospace\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Monospace,Courier New\';\"><br /></p></body></html>"))
         self.activeFileTextbox.setPlaceholderText(_translate("MainWindow", "Type your code here"))
         self.plainTextEdit.setPlainText(_translate("MainWindow", "This is where the AI\'s comments will go"))
         self.pushButton.setText(_translate("MainWindow", "Dismiss Suggestion"))
