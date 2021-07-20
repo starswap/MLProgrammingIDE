@@ -102,10 +102,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.setStyleSheet("""
 		QWidget {
 			font-family:calibri,Ubuntu,sans-serif;
-			font-size: 11pt
+			font-size: 11pt;
 		}
 		QTextEdit#activeFileTextbox {
 			font-family: 'Courier New',Monospace;
+			font-size: 12pt;
 		}
 		QLineEdit#runCommandBox {
 			font-family: 'Courier New',Monospace;
@@ -119,8 +120,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		QPlainTextEdit#outputWindow {
 			font-family: 'Courier New',Monospace;
 			font-size: 11pt;
-		}
-		""")
+		}""")
 							
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
 		self.setWindowIcon(icon)		
@@ -140,6 +140,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.enterUnitTests = UnitTestPopup()		
 		self.settings = Settings()
 		
+		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Objects.ProjectObject.Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()))[0],True,self)
 		self.setUpActions()
