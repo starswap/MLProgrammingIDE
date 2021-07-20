@@ -38,13 +38,15 @@
      <widget class="QLineEdit" name="runCommandBox">
       <property name="font">
        <font>
-        <family>monospace</family>
+        <family>Monospace</family>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
+        <kerning>true</kerning>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font-family: monospace;</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string/>
@@ -58,13 +60,14 @@
      <widget class="QPlainTextEdit" name="outputWindow">
       <property name="font">
        <font>
-        <family>monospace</family>
+        <family>Monospace</family>
+        <pointsize>11</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color:black;color:white;font-family: monospace;</string>
+       <string notr="true">background-color:black;color:white;</string>
       </property>
       <property name="readOnly">
        <bool>true</bool>
@@ -88,6 +91,7 @@
       <property name="font">
        <font>
         <family>Monospace</family>
+        <pointsize>11</pointsize>
        </font>
       </property>
       <property name="styleSheet">

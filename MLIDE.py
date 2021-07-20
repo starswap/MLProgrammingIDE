@@ -99,13 +99,28 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		super(MLIDE, self).__init__(parent)
 		self.setupUi(self)
-		
-		font = PyQt5.QtGui.QFont("Monospace");
-		font.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
-		font.setPointSize(12)
-		self.activeFileTextbox.setFont(font)
-
-				
+		self.setStyleSheet("""
+		QWidget {
+			font-family:calibri,Ubuntu,sans-serif;
+			font-size: 11pt
+		}
+		QTextEdit#activeFileTextbox {
+			font-family: 'Courier New',Monospace;
+		}
+		QLineEdit#runCommandBox {
+			font-family: 'Courier New',Monospace;
+			font-size: 11pt;
+			font-weight: bold;
+		}
+		QPlainTextEdit#shellInputBox {
+			font-family: 'Courier New',Monospace;
+			font-size: 11pt;
+		}		
+		QPlainTextEdit#outputWindow {
+			font-family: 'Courier New',Monospace;
+			font-size: 11pt;
+		}
+		""")
 							
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
 		self.setWindowIcon(icon)		
@@ -198,3 +213,22 @@ def main():
 	form.show()
 	app.exec_()
 main()
+
+"""		
+		font = PyQt5.QtGui.QFont("Monospace");
+		font.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
+		font.setPointSize(12)
+		self.activeFileTextbox.setFont(font)
+		font2 = PyQt5.QtGui.QFont("Monospace");
+		font2.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
+		font2.setPointSize(11)
+		font2.setWeight(PyQt5.QtGui.QFont.Bold)
+		self.runCommandBox.setFont(font2)
+		font3 = PyQt5.QtGui.QFont("Monospace");		
+		font3.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
+		font3.setPointSize(11)
+		self.shellInputBox.setFont(font3)
+		self.outputWindow.setFont(font3)
+		
+"""
+		
