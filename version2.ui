@@ -378,6 +378,15 @@
         <verstretch>4</verstretch>
        </sizepolicy>
       </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
+      </property>
+      <property name="textElideMode">
+       <enum>Qt::ElideNone</enum>
+      </property>
+      <property name="isWrapping" stdset="0">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item row="3" column="3">
@@ -575,15 +584,16 @@ p, li { white-space: pre-wrap; }
    </widget>
    <widget class="QMenu" name="menuPreferences">
     <property name="title">
-     <string>Preferences</string>
+     <string>Settings</string>
     </property>
+    <addaction name="actionOpen_Settings"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuRun"/>
    <addaction name="menuUnit_Tests"/>
-   <addaction name="menuHelp"/>
    <addaction name="menuPreferences"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_Project">
@@ -696,6 +706,14 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionOpen_Settings">
+   <property name="text">
+    <string>Open Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
  </widget>

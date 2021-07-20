@@ -6,7 +6,7 @@ from pathlib import Path
 import PyQt5
 import os
 import shutil
-
+import shlex
 class Project():
 	"""A project in the ml programming ide."""
 	
@@ -18,8 +18,9 @@ class Project():
 			self.open(projectNameOrFilePath) 
 		else: #If the project does not exist, we came via a new dialogue and so we need to use newProject to populate
 			self.newProject(projectNameOrFilePath)
-		self.messages = []
-	
+		self.unitTests = []
+		self.activeFileIndex = 0
+		
 	def open(self,projectFilePath):
 		"""Populates the attributes of the Project object by opening an existing project"""
 		_, extension = os.path.splitext(projectFilePath) #Splits the file path into the base path and the extension so we can check the extension is correct
@@ -43,13 +44,15 @@ class Project():
 			self.name = projectFileContents["name"]
 			self.directoryPath = projectFileContents["directoryPath"]
 			self.runCommand = projectFileContents["runCommand"]
-			self.projectFiles = projectFileContents["projectFiles"]
+
 			
 			self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name)
 			self.associatedWindow.runCommandBox.setText(self.runCommand)
 			
 			#Open all files in the project
-			for filename in self.projectFiles:
+			self.projectFiles = [] 
+			for filename in projectFileContents["projectFiles"]:				
+				self.projectFiles.append(filename) 
 				self.openFile(filename)
 			
 			#Get all of the data about unit tests in the project, iterate over each one of these and create a unit test object with the provided data. Add this to the project
@@ -95,7 +98,7 @@ class Project():
 		#Set the window title
 		self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name)
 		self.associatedWindow.actionEnter_Unit_Tests.trigger() #Projects start with getting unit tests
-		
+		self.associatedWindow.activeFileTextbox.setPlaceholderText("You need to create a new file")
 		self.save()
 		
 	def openFile(self,filename):
@@ -116,6 +119,10 @@ class Project():
 		
 	def save(self):
 		"""Saves the current project to disk, by saving all files that it includes, and updating the project file"""
+		try:
+			self.saveToProject()
+		except AttributeError:
+			pass #no files created yet 
 		f = open(os.path.join(self.directoryPath,self.fileName),"w") #Open the project file
 		
 		#Prepare data to write to project file
@@ -124,7 +131,7 @@ class Project():
 		contents["directoryPath"] = self.directoryPath
 		contents["projectFiles"] = self.projectFiles
 		contents["runCommand"] = self.runCommand
-		contents["unitTests"] = [test.saveTest() for test in self.unitTests]
+		contents["unitTests"] = [test.saveTest() for test in self.unitTests] 
 		
 		#Write the data out and close the file
 		f.write(json.dumps(contents))
@@ -138,10 +145,12 @@ class Project():
 			f.close()
 		
 		#Update the title of the window so that the user knows when the project was last saved.
-		self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name + " - last saved at" + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
+		self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name + " - last saved at " + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
 
 	def switchToFile(self,itemClicked):
 		"""Switches the currently active file"""
+		print(self.fileContents)
+		print(itemClicked.id)
 		self.activeFileIndex = itemClicked.id #Set the active file index to be the index of the file we clicked on in the list of files menu
 		self.associatedWindow.activeFileTextbox.setPlainText(self.fileContents[itemClicked.id]) #Set the contents of the active file textbox to be the contents of the file that we switched to
 
@@ -159,6 +168,7 @@ class Project():
 		#Open the file into the IDE so the user can start editng it
 		self.openFile(filename)
 		self.save()
+		self.associatedWindow.activeFileTextbox.setPlaceholderText("Type your code here")
 	
 	def saveToProject(self):
 		"""Runs every time the content of the active file textbox changes. Saves the content to the fileContents attribute of the Project object"""
@@ -179,6 +189,7 @@ class Project():
 	#Execution interface
 	def execute(self):
 		"""Run the project's runCommand as a subprocess inside the IDE, attached to the current project object (this allows it to be accessed later)"""
+		self.save()
 		
 		#Reset the text of the output and input windows
 		self.associatedWindow.outputWindow.setPlainText("") 
@@ -186,7 +197,7 @@ class Project():
 		
 		#Create the subprocess and run the command
 		self.activeProcess = PyQt5.QtCore.QProcess()
-		self.activeProcess.start(self.runCommand.split(" ")[0],self.runCommand.split(" ")[1:])
+		self.activeProcess.start(shlex.split(self.runCommand)[0],shlex.split(self.runCommand)[1:]) #https://stackoverflow.com/questions/79968/split-a-string-by-spaces-preserving-quoted-substrings-in-python. We need to preserve the quoted substrings which represent file paths.
 		
 		#Set up Qt Signals (essentially events)
 		self.activeProcess.finished.connect(self.cleanupExecution) # When the process finishes, the cleanupExecution method will be run
@@ -225,5 +236,15 @@ class Project():
 		self.activeProcess.setReadChannel(PyQt5.QtCore.QProcess.StandardError) #Tell qt that when we use bytesAvailable() or readLine() we want to refer to STDERR and not STDOUT
 		while self.activeProcess.bytesAvailable() != 0: #While we haven't read all of the data from the process' stderr
 			self.associatedWindow.outputWindow.setPlainText(self.associatedWindow.outputWindow.toPlainText() + str(self.activeProcess.readLine(),"utf-8")) #Read an additional line from stderr as bytes, decode it as UTF-8 and then append this to the output window
+
+	def runFile(self):
+		"""Runs the selected file in the list of files menu on its own according to the run command in the program settings"""
 		
+		fileName = self.associatedWindow.listOfFilesMenu.selectedItems()[0].text() #Gets the selected file in the list of files menu. When you right click on a file it is selected meaning this is correct
+		oldRunCommand = self.runCommand #Save the run command
+		self.associatedWindow.runCommandBox.setText(self.associatedWindow.settings.settings["runFileCommand"] + " '" + os.path.join(self.directoryPath,fileName)+"'") #set the run command temporarily to be the requried command to run the file. (Quotes used to avoid issues with space in filename)
+		self.execute() #Make use of the existing execution framework to run this command
+		self.associatedWindow.runCommandBox.setText(oldRunCommand) #Set the run command back to its old value
+		self.save() #save the project. Execution leads to saving so we will have accidentally overwritten the saved run command with a new temporary one. We can fix this here. 
+
 
