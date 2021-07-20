@@ -103,7 +103,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		font = PyQt5.QtGui.QFont("Monospace");
 		font.setStyleHint(PyQt5.QtGui.QFont.TypeWriter);
 		font.setPointSize(12)
-		#self.activeFileTextbox.setFont(font)
+		self.activeFileTextbox.setFont(font)
 
 				
 							
