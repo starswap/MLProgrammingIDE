@@ -13,6 +13,7 @@ from Objects.HexagonObject import Hexagon
 import json
 import os
 from pathlib import Path
+import copy
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestPopup(PyQt5.QtWidgets.QDialog):
@@ -199,20 +200,26 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()
-		print("h")
-		if str(type(self.sender())) == "<class 'PyQt5.QtWidgets.QListWidget'>":
-			print("f")
-			newAction = PyQt5.QtWidgets.QAction(menu)
-			newAction.setText("Run file")
-			newAction.triggered.connect(self.currentProject.runFile)
-			menu.addAction(newAction)
-			menu.exec_(self.sender().mapToGlobal(point))
+		sender = self.sender()
+		if str(type(sender)) == "<class 'PyQt5.QtWidgets.QListWidget'>":
+			actions = [("Run file",self.currentProject.runFile),("Copy file path",lambda : setClipboardText(os.path.join(self.currentProject.directoryPath,sender.selectedItems()[0].text())))]
 
-def main():
-	app = PyQt5.QtWidgets.QApplication(sys.argv)
-	form = MLIDE()
-	form.show()
-	app.exec_()
+		for text,call in actions:
+			action = PyQt5.QtWidgets.QAction(menu)
+			action.setText(text)
+			action.triggered.connect(call)
+			menu.addAction(action)
+
+		menu.exec_(self.sender().mapToGlobal(point))			
+			
+def setClipboardText(text):
+	global app
+	app.clipboard().setText(text)
+
+app = PyQt5.QtWidgets.QApplication(sys.argv)
+form = MLIDE()
+form.show()
+app.exec_()
 main()
 
 """		

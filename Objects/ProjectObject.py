@@ -75,8 +75,8 @@ class Project():
 		self.name = projectName
 		self.fileName = projectName + ".mlideproj"
 		self.projectFiles = []
-		self.runCommand = ""
-		self.associatedWindow.runCommandBox.setText(self.runCommand)
+		
+
 		self.unitTests = []
 					
 		#Create the project folder as a subdirectory of the user's home directory, named after the project, unless the directory already exists, in which case. 
@@ -86,6 +86,9 @@ class Project():
 			self.directoryPath = os.path.join(str(Path.home()),projectName+str(datetime.utcnow()))
 		os.mkdir(self.directoryPath)
 		
+		self.runCommand = "e.g. python3 " + self.directoryPath + "..."
+		self.associatedWindow.runCommandBox.setText(self.runCommand)
+				
 		#Create project file in project directory with the data that we already have about the project
 		f = open(os.path.join(self.directoryPath,self.fileName),"w") #Use of write mode means file is created if not exists
 		contents = {}
