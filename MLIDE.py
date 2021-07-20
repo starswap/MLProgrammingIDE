@@ -96,8 +96,11 @@ class Settings(PyQt5.QtWidgets.QDialog):
 class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def __init__(self, parent=None):
 		#Move to UI file probs
+		PyQt5.QtGui.QFontDatabase.addApplicationFont("fonts/UMR.tff")
 		super(MLIDE, self).__init__(parent)
 		self.setupUi(self)
+		self.activeFileTextbox.setFont(PyQt5.QtGui.QFont("Ubuntu Mono"))
+					
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
 		self.setWindowIcon(icon)		
 	
@@ -143,7 +146,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		if hasattr(self, "currentProject"):
 			self.currentProject.saveToProject()
-			
+
 	def showUnitTestEntry(self):
 		self.enterUnitTests.show()
 		
