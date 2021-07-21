@@ -42,8 +42,6 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
 		ctrlW.activated.connect(self.close)
 		
-		#self.showExistingTests()
-
 	def addFunction(self):
 		"""Triggered by the user clicking the Add Function button inside the Unit Test Popup box. Takes the data about the function (name, filename, number of inputs etc) provided by the user and uses this to create a table they can fill in with unit tests, a label with the name and filename of the function, and a button for adding more tests to the new function. The input data for function name etc. is saved inside this object's state, to later be put into a UnitTest object"""
 		
@@ -140,17 +138,34 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 					
 			self.MainIDE.currentProject.unitTests.append(UnitTest(funcName,inputList,outputList,types,constraints,fileName)) #Create a new UnitTest object based on all of the data that we have just collected, and add that to the currentProject
 
+		self.MainIDE.currentProject.save()
 		event.accept() #Now we've done the saving, allow the window to close as the user is expecting (as opposed to rejecting the event which would block the window from closing)
-"""
+
 	def showExistingTests(self):
-	Gets the existing tests from the current project and shows them to the user
+		"""Gets the existing tests from the current project and shows them to the user"""
 		
 		for test in self.MainIDE.currentProject.unitTests: #Loop over all tests that were previously created on the project; those that were saved to the project file.
 			self.ui.functionName.setText(test.funcName)
 			self.ui.FunctionFileName.setText(test.funcFileName)
-			self.addFunction()
-,inputList,outputList,types,inpConstraints,funcFileName):			
-		"""
+			self.addFunction() ????
+			newTable = self.ui.tables[-1]
+			newTable.setRowCount(2+len(test.inputValues))
+			#For every input and output display the type that we had saved
+			for k in range(newTable.columnCount()):
+				table.item(0,k).setText(test.types[k])
+				
+			#For every column in the current table, set the second row to show the constraints on the user's arguments 
+			for k in range(table.columnCount()):
+				table.item(1,k).setText(test.inputConstraints) #Read the constraint from the table
+
+			#Now all remaining rows after 1 and 2 simply represent tests. 
+			for i in range(2,table.rowCount()): #For each test
+				for k in range(table.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
+						table.item(i,k).setText(test.inputValues[i][k]) #Set the test input to show on screen in the table
+			
+				#Grab the output for the current test and display it
+				table.item(i,table.columnCount()-1).setText(test.outputValues[i]) #always appears in the last column of the table
+	
 
 class Settings(PyQt5.QtWidgets.QDialog):
 	def __init__(self):
@@ -230,8 +245,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.settings = Settings()
 		
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
-		
-		#Automatically ask to make new project or open
+
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
 		self.setUpActions()
@@ -287,6 +301,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	
 		#Setup right click menus:
 		self.listOfFilesMenu.customContextMenuRequested.connect(self.displayRightClickMenu)
+		
+		self.enterUnitTests.showExistingTests()??????????????
 	
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()
