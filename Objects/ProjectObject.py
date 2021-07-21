@@ -1,6 +1,6 @@
 #import the necessary packages
 import json
-#import UnitTestObject.UnitTest as UnitTest
+from . import UnitTestObject
 from datetime import datetime
 from pathlib import Path
 import PyQt5
@@ -30,6 +30,7 @@ class Project():
 			dialogue = PyQt5.QtWidgets.QMessageBox(self.associatedWindow)
 			dialogue.setIcon(PyQt5.QtWidgets.QMessageBox.Critical)
 			dialogue.setText("Please select a .mlideproj file")
+			dialogue.setWindowTitle("Error")
 			dialogue.show()
 			return False 
 		else:
@@ -56,10 +57,10 @@ class Project():
 				self.openFile(filename)
 			
 			#Get all of the data about unit tests in the project, iterate over each one of these and create a unit test object with the provided data. Add this to the project
-			self.UnitTests = []
+			self.unitTests = []
 			try:
-				for test in projectFileContents["UnitTests"]:
-					self.UnitTests.append(UnitTesttest.functionName,test.inputValues,test.outputValues,test.types,test.inputConstraints,test.functionFileName)
+				for test in projectFileContents["unitTests"]:
+					self.unitTests.append(UnitTestObject.UnitTest(test["functionName"],test["inputValues"],test["outputValues"],test["types"],test["inputConstraints"],test["functionFileName"]))
 			except KeyError:
 				pass		
 			print("name:" + self.name)
@@ -103,6 +104,7 @@ class Project():
 		self.associatedWindow.actionEnter_Unit_Tests.trigger() #Projects start with getting unit tests
 		self.associatedWindow.activeFileTextbox.setPlaceholderText("You need to create a new file")
 		self.save()
+		self.associatedWindow.actionNew_File.trigger() #Projects start with getting unit tests
 		
 	def openFile(self,filename):
 		"""Open an existing file in the project into the IDE"""
@@ -137,7 +139,7 @@ class Project():
 		contents["unitTests"] = [test.saveTest() for test in self.unitTests] 
 		
 		#Write the data out and close the file
-		f.write(json.dumps(contents))
+		f.write(json.dumps(contents,indent=4))
 		f.close()
 		
 		#For every file in the project
