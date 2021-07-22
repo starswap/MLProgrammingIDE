@@ -13,13 +13,14 @@ class Project():
 	def __init__(self,projectNameOrFilePath,exists,mainWindow):
 		"""Constructor for the project class. Will create a project object then populate its attributes by either opening an existing project or creating a new one"""
 		self.associatedWindow = mainWindow #Because the pseudocode algorithms I designed for the project involve changes to the UI from the ProjectObject (to avoid excessive passsing around), we need to store a handle to the UI window in the project object.
+		self.unitTests = []
+		self.activeFileIndex = 0		
 		self.fileContents = [] #Will contain the contents of all of the files in the project
 		if exists: #If the project already exists we came via an open dialogue and so we need to use the Project.open() method to populate attributes 
 			self.open(projectNameOrFilePath) 
 		else: #If the project does not exist, we came via a new dialogue and so we need to use newProject to populate
 			self.newProject(projectNameOrFilePath)
-		self.unitTests = []
-		self.activeFileIndex = 0
+
 		
 	def open(self,projectFilePath):
 		"""Populates the attributes of the Project object by opening an existing project"""
@@ -60,13 +61,14 @@ class Project():
 			self.unitTests = []
 			try:
 				for test in projectFileContents["unitTests"]:
-					self.unitTests.append(UnitTestObject.UnitTest(test["functionName"],test["inputValues"],test["outputValues"],test["types"],test["inputConstraints"],test["functionFileName"]))
+					self.unitTests.append(UnitTestObject.UnitTest(test["functionName"],test["inputValues"],test["outputValues"],test["types"],test["inputConstraints"],test["functionFileName"],self.associatedWindow))
 			except KeyError:
 				pass		
 			print("name:" + self.name)
 			print("directoryPath" + self.directoryPath)
 			print("run command" + self.runCommand)
 			print("projectFiles" + str(self.projectFiles))
+			print("unit Tests" + str(self.unitTests))
 			return True #Project opening was successful
 			
 	def newProject(self,projectName):
@@ -247,7 +249,7 @@ class Project():
 		
 		fileName = self.associatedWindow.listOfFilesMenu.selectedItems()[0].text() #Gets the selected file in the list of files menu. When you right click on a file it is selected meaning this is correct
 		oldRunCommand = self.runCommand #Save the run command
-		self.associatedWindow.runCommandBox.setText(self.associatedWindow.settings.settings["runFileCommand"] + " '" + os.path.join(self.directoryPath,fileName)+"'") #set the run command temporarily to be the requried command to run the file. (Quotes used to avoid issues with space in filename)
+		self.associatedWindow.runCommandBox.setText(self.associatedWindow.settings.settings["pythonCommand"] + " '" + os.path.join(self.directoryPath,fileName)+"'") #set the run command temporarily to be the requried command to run the file. (Quotes used to avoid issues with space in filename)
 		self.execute() #Make use of the existing execution framework to run this command
 		self.associatedWindow.runCommandBox.setText(oldRunCommand) #Set the run command back to its old value
 		self.save() #save the project. Execution leads to saving so we will have accidentally overwritten the saved run command with a new temporary one. We can fix this here. 

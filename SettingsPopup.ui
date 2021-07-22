@@ -35,22 +35,18 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label_2">
+       <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The command you would use to run Python in the terminal. Typically py on windows or python3 on Linux.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
-        <string>Run File Command</string>
+        <string>Python Command</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="fileRun">
+      <widget class="QLineEdit" name="runCommand">
        <property name="placeholderText">
         <string>e.g. python3</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>[+filename]</string>
        </property>
       </widget>
      </item>

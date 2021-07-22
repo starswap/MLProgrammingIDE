@@ -63,7 +63,7 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		
 		#Save the function name and file name for later
 		self.functionFiles.append(self.ui.FunctionFileName.text())
-		self.functionNames.append(newFunctionName.text())
+		self.functionNames.append(self.ui.FunctionName.text())
 		
 		#Create a table which the user will be able to type input and output values into
 		newFunctionTable = PyQt5.QtWidgets.QTableWidget(self)
@@ -136,7 +136,7 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 				except AttributeError: #Blank cell so use ""
 					outputList.append("")
 					
-			self.MainIDE.currentProject.unitTests.append(UnitTest(funcName,inputList,outputList,types,constraints,fileName)) #Create a new UnitTest object based on all of the data that we have just collected, and add that to the currentProject
+			self.MainIDE.currentProject.unitTests.append(UnitTest(funcName,inputList,outputList,types,constraints, os.path.join(self.MainIDE.currentProject.directoryPath,fileName),self.MainIDE)) #Create a new UnitTest object based on all of the data that we have just collected, and add that to the currentProject
 
 		self.MainIDE.currentProject.save()
 		event.accept() #Now we've done the saving, allow the window to close as the user is expecting (as opposed to rejecting the event which would block the window from closing)
@@ -144,29 +144,36 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 	def showExistingTests(self):
 		"""Gets the existing tests from the current project and shows them to the user"""
 		
+		print("a")
+		print(self.MainIDE.currentProject.unitTests)
 		for test in self.MainIDE.currentProject.unitTests: #Loop over all tests that were previously created on the project; those that were saved to the project file.
-			self.ui.functionName.setText(test.funcName)
-			self.ui.FunctionFileName.setText(test.funcFileName)
-			self.addFunction() ????
+			self.ui.FunctionName.setText(test.functionName) # Simulating the user typing in this stuff again is the quickest way in terms of providing code reuse.
+			self.ui.FunctionFileName.setText(test.functionFileName)
+			self.ui.NumArguments.setValue(test.numberOfInputs)
+			self.addFunction() 
 			newTable = self.ui.tables[-1]
 			newTable.setRowCount(2+len(test.inputValues))
+			newTable.setVerticalHeaderLabels(["Types","Constraints"] + [str(i+1) for i in range(newTable.rowCount()-2)]) #Label the rows of the table as Types, Constraints, 1, 2, 3 ....			
 			#For every input and output display the type that we had saved
 			for k in range(newTable.columnCount()):
-				table.item(0,k).setText(test.types[k])
+				newTable.setItem(0,k,PyQt5.QtWidgets.QTableWidgetItem(test.types[k]))
 				
 			#For every column in the current table, set the second row to show the constraints on the user's arguments 
-			for k in range(table.columnCount()):
-				table.item(1,k).setText(test.inputConstraints) #Read the constraint from the table
+			for k in range(newTable.columnCount()):
+				newTable.setItem(1,k,PyQt5.QtWidgets.QTableWidgetItem(test.inputConstraints[k])) #Read the constraint from the table
 
 			#Now all remaining rows after 1 and 2 simply represent tests. 
-			for i in range(2,table.rowCount()): #For each test
-				for k in range(table.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
-						table.item(i,k).setText(test.inputValues[i][k]) #Set the test input to show on screen in the table
+			for i in range(2,newTable.rowCount()): #For each test
+				for k in range(newTable.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
+						newTable.setItem(i,k,PyQt5.QtWidgets.QTableWidgetItem(test.inputValues[i-2][k])) #Set the test input to show on screen in the table
 			
 				#Grab the output for the current test and display it
-				table.item(i,table.columnCount()-1).setText(test.outputValues[i]) #always appears in the last column of the table
-	
-
+				newTable.setItem(i,newTable.columnCount()-1,PyQt5.QtWidgets.QTableWidgetItem(test.outputValues[i-2])) #always appears in the last column of the table
+		self.ui.FunctionName.setText("")
+		self.ui.FunctionFileName.setText("")	
+		self.ui.NumArguments.setValue(1)
+		
+		print(self.MainIDE.currentProject.unitTests[0].executeTests())#???????????????????????????????????????????
 class Settings(PyQt5.QtWidgets.QDialog):
 	def __init__(self):
 		super().__init__()
@@ -177,9 +184,9 @@ class Settings(PyQt5.QtWidgets.QDialog):
 		
 		#Defaults:
 		if sys.platform == "win32" or sys.platform == "cygwin":
-			self.settings["runFileCommand"] = "py"
+			self.settings["pythonCommand"] = "py"
 		else:
-			self.settings["runFileCommand"] = "python3"		
+			self.settings["pythonCommand"] = "python3"		
 		
 		try:
 			f = open(os.path.join(str(Path.home()),".mlidesettings"),"w+")
@@ -188,7 +195,7 @@ class Settings(PyQt5.QtWidgets.QDialog):
 		except json.decoder.JSONDecodeError:
 			pass #No settings file
 	def closeEvent(self, event):
-		self.settings["runFileCommand"] = self.ui.fileRun.text()
+		self.settings["pythonCommand"] = self.ui.runCommand.text()
 		f = open(os.path.join(str(Path.home()),".mlidesettings"),"w")
 		f.write(json.dumps(self.settings))
 		f.close()
@@ -302,7 +309,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		#Setup right click menus:
 		self.listOfFilesMenu.customContextMenuRequested.connect(self.displayRightClickMenu)
 		
-		self.enterUnitTests.showExistingTests()??????????????
+		self.enterUnitTests.showExistingTests()
 	
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()
@@ -329,7 +336,12 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		
 		self.newProjectButton.clicked.connect(self.new)
 		self.openProjectButton.clicked.connect(self.open)
-	
+
+		shortcut = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+O"),self)
+		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+N"),self)
+		shortcut.activated.connect(self.openProjectButton.click)
+		shortcut2.activated.connect(self.newProjectButton.click)
+		#Add ctrl L for learn?
 	def open(self):
 		self.hide()
 		self.IDEWindow.show()

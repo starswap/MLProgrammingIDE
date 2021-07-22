@@ -1,7 +1,10 @@
 import json
+import jinja2
+import subprocess
+import os
 class UnitTest():
 	"""An object representing a set of Unit Tests that can be run against one individual function in the user's code. (i.e. one UnitTest object to one function), including a set of input values, types, and constraints, and a set of output values, as well as the methods required to run these against the function when the user has written it."""
-	def __init__(self,funcName,inputList,outputList,types,inpConstraints,funcFileName):
+	def __init__(self,funcName,inputList,outputList,types,inpConstraints,funcFileName,window):
 		"""Constructor for the UnitTest class - take the data surrounding the unit test and store it inside the class' scope. This data comes from the UnitTestPopup part of the UI, typed in by the user."""
 		
 		#Put the provided data into the permanent storage of the class (as opposed to local variables in the constructor)
@@ -12,7 +15,8 @@ class UnitTest():
 		self.outputValues = outputList
 		self.types = types
 		self.inputConstraints = inpConstraints
-	
+		self.associatedWindow = window	
+
 	def saveTest(self):
 		"""Returns a string of JSON data which represents the full state of the UnitTest object, which can then be written out into a file to save the project"""
 		stateObj = {} #Will store all data about the object
@@ -26,17 +30,35 @@ class UnitTest():
 
 		return stateObj # Will later be converted to a json string
 
+	
+	def executeTests(self):
+	
+		#https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
+		#https://realpython.com/primer-on-jinja-templating/
+		TEMPLATE ="""import importlib.util
+spec = importlib.util.spec_from_file_location("moduleToTest", "{{filePath}}")
+codeToTest = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(codeToTest)
+print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor %}),end="")
 """
-
+		results = []
+		outputs = []
+		for i,oneTest in enumerate(self.inputValues):
+			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=oneTest)
+			print(filledInTemplate)
+			g = open("unitTestTemp.py","w")
+			g.write(filledInTemplate)
+			g.close()
+			returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],"unitTestTemp.py"]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
+			os.remove("unitTestTemp.py")
+			if returnedVal == self.outputValues[i]:
+				results.append(True)
+			else:
+				results.append(False)
+			outputs.append(returnedVal)
+		return results, outputs
+"""
 Methods:
-
-    UnitTest.executeTests()
-
-    UnitTest.addTest()
-
-    (constructor)
-
-    UnitTest.saveTest()
 
     UnitTest.GenerateMockInput()
 
