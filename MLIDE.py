@@ -7,16 +7,21 @@ import json
 import os
 import copy
 from pathlib import Path
+from datetime import datetime
 
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
 
 import UI.baseUI
 import UI.EnterUnitTests
+import UI.UnitTestResults
 import UI.SettingsPopup
 import UI.LoadScreen
 
 import CodeFeatures
+
+
+
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestPopup(PyQt5.QtWidgets.QDialog):
@@ -27,7 +32,6 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		self.MainIDE = MainIDE # We store the MainIDE window associated with this popup so that later we can reference the currentProject
 		
 		self.ui = UI.EnterUnitTests.Ui_Dialog() #Load in the UI I have designed
-
 		#Set up UI and button onclicks
 		self.ui.setupUi(self)		
 		self.ui.closeButton.clicked.connect(self.close)
@@ -54,7 +58,19 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 			font-family: 'Consolas',Monospace;
 			font-size: 11pt;
 		}""")
-		self.ui.Functions.addWidget(newFunctionName)
+		
+		horizontal = PyQt5.QtWidgets.QHBoxLayout(self)
+		horizontal.addWidget(newFunctionName)
+		delete_btn = PyQt5.QtWidgets.QPushButton(self)
+		delete_btn.setText("Delete")
+		delete_btn.setFixedSize(100,30)
+		delete_btn.clicked.connect(lambda : self.removeFunction(len(self.ui.tables)))
+		horizontal.addWidget(delete_btn)
+		horizontal.setObjectName("function"+len(str(self.ui.tables)))
+		self.ui.Functions.addLayout(horizontal)
+		
+		
+		
 		
 		#Create a label to show the file in which the function is stored
 		newFunctionFile = PyQt5.QtWidgets.QLabel(self)
@@ -173,7 +189,75 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		self.ui.FunctionFileName.setText("")	
 		self.ui.NumArguments.setValue(1)
 		
-		print(self.MainIDE.currentProject.unitTests[0].executeTests())#???????????????????????????????????????????
+	def removeFunction(self,funcToRemove):
+		del self.functionNames[funcToRemove]	
+		del self.functionFileNames[funcToRemove]
+		self.ui.Functions.removeLayout("function"+str(funcToRemove))
+		del self.ui.tables[funcToRemove]
+		
+		
+#Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
+class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
+	def __init__(self,MainWindow): # Get the project
+		super().__init__()
+		self.resultsUI = UI.UnitTestResults.Ui_Dialog()
+		self.resultsUI.setupUi(self)
+		self.MainIDE = MainWindow
+		#Set up the ctrlW shortcut for easy closing		
+		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
+		ctrlW.activated.connect(self.close)
+		self.setStyleSheet("""
+		QWidget {
+			font-family:calibri,Ubuntu,sans-serif;
+			font-size: 11pt;
+		}""")
+		
+
+	def show(self):	
+		EMOJI = {True:"✅",False:"❌"}
+		self.MainIDE.currentProject.save()
+		self.setWindowTitle("Unit Test Results at " + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
+		for func in self.MainIDE.currentProject.unitTests:
+			results, outputs = func.executeTests()
+			newFunctionName = PyQt5.QtWidgets.QLabel(self)
+			newFunctionName.setText(func.functionName+"():")
+			newFunctionName.setObjectName("newFunctionName")
+			newFunctionName.setStyleSheet("""		
+			QLabel#newFunctionName {
+				font-family: 'Consolas',Monospace;
+				font-size: 11pt;
+			}""")
+			self.resultsUI.ResultsLayout.addWidget(newFunctionName)
+		
+			#Create a label to show the file in which the function is stored
+			newFunctionFile = PyQt5.QtWidgets.QLabel(self)
+			newFunctionFile.setText("(in file " + func.functionFileName + ")")
+			self.resultsUI.ResultsLayout.addWidget(newFunctionFile)		
+				
+			
+			newFunctionTable = PyQt5.QtWidgets.QTableWidget(self)
+			newFunctionTable.setRowCount(len(func.inputValues)) #To start with there is a row for types, a row for constraints and a row for one test. The user can add more test rows by clicking the button we are about to make.
+			newFunctionTable.setColumnCount(func.numberOfInputs+3) #there is one column for each input argument to the new function plus 1 for output
+			ALPH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" #We will label the arguments using capital letters from A to Z
+			newFunctionTable.setHorizontalHeaderLabels(["Input" + ALPH[i] for i in range(func.numberOfInputs)]+["Expected","Actual","Pass/Fail"]) 
+			self.resultsUI.ResultsLayout.addWidget(newFunctionTable)
+			for testNo in range(len(func.inputValues)):
+				for argNo in range(func.numberOfInputs):
+					newFunctionTable.setItem(testNo,argNo,PyQt5.QtWidgets.QTableWidgetItem(func.inputValues[testNo][argNo])) #Set the test input to show on screen in the table
+				newFunctionTable.setItem(testNo,func.numberOfInputs,PyQt5.QtWidgets.QTableWidgetItem(func.outputValues[testNo]))
+				newFunctionTable.setItem(testNo,func.numberOfInputs+1,PyQt5.QtWidgets.QTableWidgetItem(outputs[testNo]))
+				emoticon = PyQt5.QtWidgets.QTableWidgetItem(EMOJI[results[testNo]])
+				if results[testNo]:
+					emoticon.setBackground(PyQt5.QtGui.QColor("lime"))
+				else:
+					emoticon.setBackground(PyQt5.QtGui.QColor("darkred"))
+				newFunctionTable.setItem(testNo,func.numberOfInputs+2,emoticon)
+		super().show()
+		
+	
+
+
+#Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class Settings(PyQt5.QtWidgets.QDialog):
 	def __init__(self):
 		super().__init__()
@@ -181,6 +265,13 @@ class Settings(PyQt5.QtWidgets.QDialog):
 		self.ui.setupUi(self)
 		self.ui.closeButton.clicked.connect(self.close)
 		self.settings = {}
+		
+		self.setStyleSheet("""
+		QWidget {
+			font-family:calibri,Ubuntu,sans-serif;
+			font-size: 11pt;
+		}""")
+		
 		
 		#Defaults:
 		if sys.platform == "win32" or sys.platform == "cygwin":
@@ -236,7 +327,12 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
 		self.setWindowIcon(icon)		
 	
+		#Prepare popups
+		self.enterUnitTests = UnitTestPopup(self)
+		self.settings = Settings()
+	
 		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
+		self.actionDisplay_Test_Results.triggered.connect(self.showTestResults)
 		self.actionOpen_Settings.triggered.connect(self.showSettings)
 		self.actionOpen_Project.triggered.connect(self.createCurrentProjectByOpening)
 		self.actionNew_Project.triggered.connect(self.createCurrentProjectByNew)
@@ -246,11 +342,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 										
 		self.highlighter = CodeFeatures.PythonSyntaxHighlighter(self.activeFileTextbox)
 		self.justDeactivated = False
-	
-		#Prepare popups
-		self.enterUnitTests = UnitTestPopup(self)		
-		self.settings = Settings()
-		
+			
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
 
 	def createCurrentProjectByOpening(self):
@@ -286,7 +378,10 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 	def showSettings(self):
 		self.settings.show()
-		
+	
+	def showTestResults(self):
+		self.utr = UnitTestResultsPopup(self)
+		self.utr.show()
 	def setUpActions(self):
 		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
 		self.actionSave_Project.triggered.connect(self.currentProject.save)
@@ -333,6 +428,13 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.setWindowIcon(icon)	
 		self.setFixedSize(self.size())
 		self.IDEWindow = IDEWindow
+		
+		
+		self.setStyleSheet("""
+		QWidget {
+			font-family:calibri,Ubuntu,sans-serif;
+			font-size: 11pt;
+		}""")
 		
 		self.newProjectButton.clicked.connect(self.new)
 		self.openProjectButton.clicked.connect(self.open)

@@ -13,9 +13,6 @@
   <property name="windowTitle">
    <string>ML Programming IDE</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: rgb(114, 159, 207)</string>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="6" column="1">

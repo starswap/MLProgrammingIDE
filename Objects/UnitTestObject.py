@@ -20,7 +20,6 @@ class UnitTest():
 	def saveTest(self):
 		"""Returns a string of JSON data which represents the full state of the UnitTest object, which can then be written out into a file to save the project"""
 		stateObj = {} #Will store all data about the object
-		
 		stateObj["functionName"] = self.functionName
 		stateObj["inputValues"] = self.inputValues
 		stateObj["outputValues"] = self.outputValues
@@ -32,30 +31,47 @@ class UnitTest():
 
 	
 	def executeTests(self):
-	
+		"""Executes all defined tests in the UnitTest object against the code of the function that the user has written to see if the correct outputs are produced"""
+		
 		#https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 		#https://realpython.com/primer-on-jinja-templating/
-		TEMPLATE ="""import importlib.util
+		TEMPLATE = """import importlib.util
 spec = importlib.util.spec_from_file_location("moduleToTest", "{{filePath}}")
 codeToTest = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(codeToTest)
 print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor %}),end="")
-"""
-		results = []
-		outputs = []
-		for i,oneTest in enumerate(self.inputValues):
-			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=oneTest)
-			print(filledInTemplate)
+""" #This is the code that will be run to test the user's code. We first import the file containing the user's code and then we run the function with the required arguments. The TEMPLATE variable is in jinja template format as the actual function name, file name and arguments will be filled in at runtime. 
+
+		results = [] #list of bools - True if the test was successful and the output matched the expected output, False otherwise
+		outputs = [] #list of string - the returned values from the function the user has written that we are testing
+		
+		for i,oneTest in enumerate(self.inputValues): #For every test to run
+			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=oneTest) #Fill in the template code so that the function executed is the user's one
+		
+			#Write the filled in template out to a file which we can then run to execute it
 			g = open("unitTestTemp.py","w")
 			g.write(filledInTemplate)
 			g.close()
-			returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],"unitTestTemp.py"]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
+			
+			#Run the file and get the output
+			try:
+				returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],"unitTestTemp.py"]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
+				
+				#Check if the actual output matches the expected output for this test.
+				if returnedVal == self.outputValues[i]:
+					results.append(True)
+				else:
+					results.append(False)
+					
+				#Save the output to return later
+				outputs.append(returnedVal)
+			except subprocess.CalledProcessError: #There was an error in the user's code or the function was not yet defined
+				outputs.append("ERROR")
+				results.append(False)				
+			
+			#delete the temp file
 			os.remove("unitTestTemp.py")
-			if returnedVal == self.outputValues[i]:
-				results.append(True)
-			else:
-				results.append(False)
-			outputs.append(returnedVal)
+			
 		return results, outputs
 """
 Methods:
@@ -78,3 +94,4 @@ Attributes:
     UnitTest.numberOfInputs [integer]
 
     UnitTest.functionFileName [string]"""
+    

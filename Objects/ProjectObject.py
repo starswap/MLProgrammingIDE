@@ -179,7 +179,10 @@ class Project():
 	
 	def saveToProject(self):
 		"""Runs every time the content of the active file textbox changes. Saves the content to the fileContents attribute of the Project object"""
-		self.fileContents[self.activeFileIndex] = self.associatedWindow.activeFileTextbox.toPlainText()
+		try:
+			self.fileContents[self.activeFileIndex] = self.associatedWindow.activeFileTextbox.toPlainText()
+		except IndexError:
+			pass # no files fcreated yet			
 		self.runCommand = self.associatedWindow.runCommandBox.text()
 	
 
