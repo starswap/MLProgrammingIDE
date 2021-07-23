@@ -221,22 +221,31 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
-	def __init__(self,MainWindow): # Get the project
-		super().__init__()
-		self.resultsUI = UI.UnitTestResults.Ui_Dialog()
-		self.resultsUI.setupUi(self)
-		self.MainIDE = MainWindow
+	"""Popup window which displays the results of executing the user's unit tests against their code"""
+	def __init__(self,MainWindow): 
+		"""Constructor - initialise UI"""
+		super().__init__() #Call superclass constructor to get a dialogue box
+		self.resultsUI = UI.UnitTestResults.Ui_Dialog() #Get the UI I have designed
+		self.resultsUI.setupUi(self) #Set up the UI and fill it with the components it needs
+		self.MainIDE = MainWindow #Save the main window of the IDE as an attribute of the popup object, which allows us to later access things like the currentProject
+		
 		#Set up the ctrlW shortcut for easy closing		
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
 		ctrlW.activated.connect(self.close)	
 
-	def show(self):	
-		EMOJI = {True:"✅",False:"❌"}
-		self.MainIDE.currentProject.save()
+	def show(self):
+		"""Executes the UnitTests and then shows the popup with the results. Polymorphically extends the QDialog.show method"""
+		EMOJI = {True:"✅",False:"❌"} #These emoticons are used for pass and fail on a test respectively.
+		ALPH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" #We will label the user's function's arguments using capital letters from A to Z
+
+		self.MainIDE.currentProject.save() #Start by saving the project so the user's code that we test is the most up to date
 		self.setWindowTitle("Unit Test Results at " + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
-		for func in self.MainIDE.currentProject.unitTests:
-			results, outputs = func.executeTests()
-			newFunctionName = PyQt5.QtWidgets.QLabel(self)
+		
+		for func in self.MainIDE.currentProject.unitTests: #for every function that we need to run tests against
+			results, outputs = func.executeTests() #Get the results of the tests (list of bools) and the outputs of the tests
+
+			#Create a label with a monospace font with the name of the function we are testing and add it to the dialogue box
+			newFunctionName = PyQt5.QtWidgets.QLabel(self) 
 			newFunctionName.setText(func.functionName+"():")
 			newFunctionName.setObjectName("newFunctionName")
 			newFunctionName.setStyleSheet("""		
@@ -246,30 +255,32 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 			}""")
 			self.resultsUI.ResultsLayout.addWidget(newFunctionName)
 		
-			#Create a label to show the file in which the function is stored
+			#Create a label to show the file in which the function is stored and add it to the dialogue box
 			newFunctionFile = PyQt5.QtWidgets.QLabel(self)
 			newFunctionFile.setText("(in file " + func.functionFileName + ")")
 			self.resultsUI.ResultsLayout.addWidget(newFunctionFile)		
 				
-			
+			#Create a table widget which will contain the results of the unit tests for one function
 			newFunctionTable = PyQt5.QtWidgets.QTableWidget(self)
-			newFunctionTable.setRowCount(len(func.inputValues)) #To start with there is a row for types, a row for constraints and a row for one test. The user can add more test rows by clicking the button we are about to make.
-			newFunctionTable.setColumnCount(func.numberOfInputs+3) #there is one column for each input argument to the new function plus 1 for output
-			ALPH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" #We will label the arguments using capital letters from A to Z
+			newFunctionTable.setRowCount(len(func.inputValues)) #A row for each test
+			newFunctionTable.setColumnCount(func.numberOfInputs+3) #there is one column for each input argument to the new function plus 1 for expected output, 1 for actual output and 1 for Pass/Fail
 			newFunctionTable.setHorizontalHeaderLabels(["Input" + ALPH[i] for i in range(func.numberOfInputs)]+["Expected","Actual","Pass/Fail"]) 
-			self.resultsUI.ResultsLayout.addWidget(newFunctionTable)
-			for testNo in range(len(func.inputValues)):
-				for argNo in range(func.numberOfInputs):
+			self.resultsUI.ResultsLayout.addWidget(newFunctionTable) #Display the table by adding it to the layout
+			
+			for testNo in range(len(func.inputValues)): # For every test that we need to execute against the function we are testing
+				for argNo in range(func.numberOfInputs): #For every argument the function has 
 					newFunctionTable.setItem(testNo,argNo,PyQt5.QtWidgets.QTableWidgetItem(func.inputValues[testNo][argNo])) #Set the test input to show on screen in the table
-				newFunctionTable.setItem(testNo,func.numberOfInputs,PyQt5.QtWidgets.QTableWidgetItem(func.outputValues[testNo]))
-				newFunctionTable.setItem(testNo,func.numberOfInputs+1,PyQt5.QtWidgets.QTableWidgetItem(outputs[testNo]))
-				emoticon = PyQt5.QtWidgets.QTableWidgetItem(EMOJI[results[testNo]])
-				if results[testNo]:
-					emoticon.setBackground(PyQt5.QtGui.QColor("lime"))
-				else:
-					emoticon.setBackground(PyQt5.QtGui.QColor("darkred"))
-				newFunctionTable.setItem(testNo,func.numberOfInputs+2,emoticon)
-		super().show()
+				
+				newFunctionTable.setItem(testNo,func.numberOfInputs,PyQt5.QtWidgets.QTableWidgetItem(func.outputValues[testNo])) #Show the expected output value in the table
+				newFunctionTable.setItem(testNo,func.numberOfInputs+1,PyQt5.QtWidgets.QTableWidgetItem(outputs[testNo])) #Show the actual output value in the table
+				
+				emoticon = PyQt5.QtWidgets.QTableWidgetItem(EMOJI[results[testNo]]) #Create a table widget item we can later put into the table to represent the pass/fail. We don't add it straight away as we want to style it based on whether or not the test had a positive result
+				if results[testNo]: #The test passed
+					emoticon.setBackground(PyQt5.QtGui.QColor("lime")) #green = positive
+				else: #the test failed
+					emoticon.setBackground(PyQt5.QtGui.QColor("darkred")) #red = negative
+				newFunctionTable.setItem(testNo,func.numberOfInputs+2,emoticon) #Add the cell to the table so it is displayed
+		super().show() #Actually show the dialogue we've built by calling the superclass method.
 		
 	
 
