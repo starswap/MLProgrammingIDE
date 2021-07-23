@@ -37,10 +37,16 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		self.ui.closeButton.clicked.connect(self.close)
 		self.ui.addFunctionButton.clicked.connect(self.addFunction)
 
-		#As the user enters new functions, we store the tables of in/out etc values, function name and function filename associated with each new function, so these can later be stored in a UnitTest object.
+		#As the user enters new functions, we store the tables of in/out etc values, function name and function filename associated with each new function, so these can later be stored in a UnitTest object. We save the gui object handles in case the user tries to delete the unit test later.
 		self.ui.tables = []
+		self.ui.functionNames = []
+		self.ui.functionFiles = []
+		self.ui.deleteButtons = []
+		self.ui.horizontalLayouts = []
+		self.ui.testButtons = []
 		self.functionNames = []
 		self.functionFiles = []
+
 		
 		#Set up the ctrlW shortcut for easy closing		
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
@@ -58,23 +64,24 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 			font-family: 'Consolas',Monospace;
 			font-size: 11pt;
 		}""")
-		
+		self.ui.functionNames.append(newFunctionName)
+				
 		horizontal = PyQt5.QtWidgets.QHBoxLayout(self)
 		horizontal.addWidget(newFunctionName)
 		delete_btn = PyQt5.QtWidgets.QPushButton(self)
 		delete_btn.setText("Delete")
 		delete_btn.setFixedSize(100,30)
-		delete_btn.clicked.connect(lambda : self.removeFunction(len(self.ui.tables)))
+		self.ui.deleteButtons.append(delete_btn)
+		index = len(self.ui.tables)
+		delete_btn.clicked.connect(lambda : self.removeFunction(index))
 		horizontal.addWidget(delete_btn)
-		horizontal.setObjectName("function"+len(str(self.ui.tables)))
+		self.ui.horizontalLayouts.append(horizontal)
 		self.ui.Functions.addLayout(horizontal)
-		
-		
-		
 		
 		#Create a label to show the file in which the function is stored
 		newFunctionFile = PyQt5.QtWidgets.QLabel(self)
 		newFunctionFile.setText("(in file " + self.ui.FunctionFileName.text() + ")")
+		self.ui.functionFiles.append(newFunctionFile)
 		self.ui.Functions.addWidget(newFunctionFile)		
 		
 		#Save the function name and file name for later
@@ -89,15 +96,21 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		newFunctionTable.setHorizontalHeaderLabels(["Input" + ALPH[i] for i in range(self.ui.NumArguments.value())]+["Output"]) #Label the columns of the table as InputA, InputB, InputC etc. and then Output
 		newFunctionTable.setVerticalHeaderLabels(["Types","Constraints"] + [str(i+1) for i in range(newFunctionTable.rowCount()-2)]) #Label the rows of the table as Types, Constraints, 1, 2, 3 ....
 		self.ui.Functions.addWidget(newFunctionTable) #Add the table to the functions layout on screen 
-		self.ui.tables.append(newFunctionTable) #Save a reference to the table so we can iterate over its contents later once the user has finished editing it
-		
+
+
 		#Create a button for the user to add an additional test to this function, which will add another row to the table that we just created.
 		newTestButton = PyQt5.QtWidgets.QPushButton(self)
 		newTestButton.associatedTable = newFunctionTable
 		newTestButton.clicked.connect(self.addTest)
 		newTestButton.setText("Add test")
+		self.ui.testButtons.append(newTestButton)
 		self.ui.Functions.addWidget(newTestButton)
-	
+		self.ui.tables.append(newFunctionTable) #Save a reference to the table so we can iterate over its contents later once the user has finished editing it
+
+		#reset		
+		self.ui.FunctionName.setText("")
+		self.ui.FunctionFileName.setText("")	
+		self.ui.NumArguments.setValue(1)
 	def addTest(self):
 		"""Adds an additional row to the table associated with the New Test button whose clicking led to this method being called (see newTestButton.clicked.connect)"""
 		sender = self.sender() #The button object that was clicked, causing this signal to be sent
@@ -111,48 +124,52 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 	
 		#For every table that we created, i.e. for every function the user has made a unit test for, ...	
 		for j in range(len(self.ui.tables)):
-			table = self.ui.tables[j] #Get the current table
-			funcName = self.functionNames[j] #Get the name of the current function
-			inputList = [] # Prepare a list of inputs to the function
-			outputList = [] #Prepare a list of outputs from the function
-			types = [] #Prepare a list of types of the function inputs.
-			constraints = [] #Prepare a list of constraints on the function inputs
-			fileName = self.functionFiles[j] #Get the filename for the file in which the current function is stored
+			try:
+				table = self.ui.tables[j] #Get the current table
+				funcName = self.functionNames[j] #Get the name of the current function
+				inputList = [] # Prepare a list of inputs to the function
+				outputList = [] #Prepare a list of outputs from the function
+				types = [] #Prepare a list of types of the function inputs.
+				constraints = [] #Prepare a list of constraints on the function inputs
+				fileName = self.functionFiles[j] #Get the filename for the file in which the current function is stored
 			
-			#For every column in the current table, use the first row to get the types of the user's arguments
-			for k in range(table.columnCount()):
-				try:
-					type1 = table.item(0,k).text() #Read the type from the table
-				except AttributeError: #If this occurs, there was a blank cell so we just use "", as no type was provided
-					type1 = ""
-				types.append(type1) #Save the type that we just got and then get the next one.
-				
-			#For every column in the current table, use the second row to get the constraints on the user's arguments 
-			for k in range(table.columnCount()):
-				try:
-					constr1 = table.item(1,k).text() #Read the constraint from the table
-				except AttributeError: #If this occurs, there was a blank cell so just use "" as no constraint provided
-					constr1 = ""
-				constraints.append(constr1) #Save the current constraint and then we can get the next one
-				
-			#Now all remaining rows after 1 and 2 simply represent tests. 
-			for i in range(2,table.rowCount()): #For each test
-
-				thisInput = [] #Prepare a list to store one test's worth of input 
-				for k in range(table.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
+				#For every column in the current table, use the first row to get the types of the user's arguments
+				for k in range(table.columnCount()):
 					try:
-						thisInput.append(table.item(i,k).text()) #Get the test input
-					except AttributeError: #Blank cell...
-						thisInput.append("") #... so use ""
-				inputList.append(thisInput) #Add all the inputs we just collected to the overall list of input lists 
-
-				#Grab the output for the current test
-				try:
-					outputList.append(table.item(i,table.columnCount()-1).text()) #always appears in the last column of the table
-				except AttributeError: #Blank cell so use ""
-					outputList.append("")
+						type1 = table.item(0,k).text() #Read the type from the table
+					except AttributeError: #If this occurs, there was a blank cell so we just use "", as no type was provided
+						type1 = ""
+					types.append(type1) #Save the type that we just got and then get the next one.
 					
-			self.MainIDE.currentProject.unitTests.append(UnitTest(funcName,inputList,outputList,types,constraints, os.path.join(self.MainIDE.currentProject.directoryPath,fileName),self.MainIDE)) #Create a new UnitTest object based on all of the data that we have just collected, and add that to the currentProject
+				#For every column in the current table, use the second row to get the constraints on the user's arguments 
+				for k in range(table.columnCount()):
+					try:
+						constr1 = table.item(1,k).text() #Read the constraint from the table
+					except AttributeError: #If this occurs, there was a blank cell so just use "" as no constraint provided
+						constr1 = ""
+					constraints.append(constr1) #Save the current constraint and then we can get the next one
+					
+				#Now all remaining rows after 1 and 2 simply represent tests. 
+				for i in range(2,table.rowCount()): #For each test
+	
+					thisInput = [] #Prepare a list to store one test's worth of input 
+					for k in range(table.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
+						try:
+							thisInput.append(table.item(i,k).text()) #Get the test input
+						except AttributeError: #Blank cell...
+							thisInput.append("") #... so use ""
+					inputList.append(thisInput) #Add all the inputs we just collected to the overall list of input lists 
+	
+					#Grab the output for the current test
+					try:
+						outputList.append(table.item(i,table.columnCount()-1).text()) #always appears in the last column of the table
+					except AttributeError: #Blank cell so use ""
+						outputList.append("")
+						
+				self.MainIDE.currentProject.unitTests.append(UnitTest(funcName,inputList,outputList,types,constraints, os.path.join(self.MainIDE.currentProject.directoryPath,fileName),self.MainIDE)) #Create a new UnitTest object based on all of the data that we have just collected, and add that to the currentProject
+			except RuntimeError:#"wrapped C/C++ object of type QTableWidget has been deleted" - user doesn't want the test anymore
+				pass
+				
 
 		self.MainIDE.currentProject.save()
 		event.accept() #Now we've done the saving, allow the window to close as the user is expecting (as opposed to rejecting the event which would block the window from closing)
@@ -189,13 +206,19 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 		self.ui.FunctionFileName.setText("")	
 		self.ui.NumArguments.setValue(1)
 		
+		
 	def removeFunction(self,funcToRemove):
-		del self.functionNames[funcToRemove]	
-		del self.functionFileNames[funcToRemove]
-		self.ui.Functions.removeLayout("function"+str(funcToRemove))
-		del self.ui.tables[funcToRemove]
-		
-		
+	#	del self.functionNames[funcToRemove]	
+	#	del self.functionFiles[funcToRemove]
+
+		#Delete all ui objects in the popup for the current test
+		self.ui.tables[funcToRemove].deleteLater()
+		self.ui.functionNames[funcToRemove].deleteLater()
+		self.ui.functionFiles[funcToRemove].deleteLater()
+		self.ui.deleteButtons[funcToRemove].deleteLater()
+		self.ui.horizontalLayouts[funcToRemove].deleteLater()
+		self.ui.testButtons[funcToRemove].deleteLater()
+
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 	def __init__(self,MainWindow): # Get the project
@@ -205,13 +228,7 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 		self.MainIDE = MainWindow
 		#Set up the ctrlW shortcut for easy closing		
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
-		ctrlW.activated.connect(self.close)
-		self.setStyleSheet("""
-		QWidget {
-			font-family:calibri,Ubuntu,sans-serif;
-			font-size: 11pt;
-		}""")
-		
+		ctrlW.activated.connect(self.close)	
 
 	def show(self):	
 		EMOJI = {True:"✅",False:"❌"}
@@ -265,12 +282,6 @@ class Settings(PyQt5.QtWidgets.QDialog):
 		self.ui.setupUi(self)
 		self.ui.closeButton.clicked.connect(self.close)
 		self.settings = {}
-		
-		self.setStyleSheet("""
-		QWidget {
-			font-family:calibri,Ubuntu,sans-serif;
-			font-size: 11pt;
-		}""")
 		
 		
 		#Defaults:
