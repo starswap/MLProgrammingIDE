@@ -98,5 +98,20 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		#At the end, if we are one """ short, the comment must continue onto the next line. Therefore we should highlight all of the rest of this line. When the next line is highlighted we will deal with the need to continue highlighting at the start of that one.		
 		if self.currentBlockState() == 1:
 			self.setFormat(tripleQComment[-1],len(lineToHighlight)-tripleQComment[-1]+3,formatToUse)	
-		
+
+def writeLineNumbers(lineNumberBox,activeFileBox):
+
+	print(lineNumberBox.fontMetrics().lineSpacing())
+	print(activeFileBox.fontMetrics().lineSpacing())
+
+	lines = activeFileBox.height()//activeFileBox.fontMetrics().height() # https://stackoverflow.com/questions/43502014/pyqt4-how-many-lines-are-visible-in-qtextedit-at-once-without-scrolling
+	text = ""
+	for i in range(lines):
+		text += str(i) + "\n"
+	lineNumberBox.setEnabled(False)
+	lineNumberBox.setHtml("<p style='text-align:right;'>"+text+"</p>")
 	
+#fix alignment -     ui->textEdit->setText("20190226");
+    Qt::AlignmentFlag a=Qt::AlignHCenter;//Centering effect
+         / / Be careful, change the text alignment of this sentence, must be placed behind the setText to have an effect
+    ui->textEdit->setAlignment(a);??

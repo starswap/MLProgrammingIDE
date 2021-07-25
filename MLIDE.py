@@ -344,6 +344,13 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		QPlainTextEdit#outputWindow {
 			font-family: 'Consolas',Monospace;
 			font-size: 11pt;
+		}
+		QTextEdit#lineNumberBox {
+			font-family: 'Consolas',Monospace;
+			font-size: 12pt;
+			background-color: #ababab;
+			text-align: right;
+			color: black;
 		}""")
 							
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
@@ -394,6 +401,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		if hasattr(self, "currentProject"):
 			self.currentProject.saveToProject()
+		CodeFeatures.writeLineNumbers(self.lineNumberBox,self.activeFileTextbox)			
 
 	def showUnitTestEntry(self):
 		self.enterUnitTests.show()
@@ -465,6 +473,12 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+N"),self)
 		shortcut.activated.connect(self.openProjectButton.click)
 		shortcut2.activated.connect(self.newProjectButton.click)
+		
+		
+		#Set up the ctrlW shortcut for easy closing		
+		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
+		ctrlW.activated.connect(self.close)
+				
 		#Add ctrl L for learn?
 	def open(self):
 		self.hide()
