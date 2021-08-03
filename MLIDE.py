@@ -7,6 +7,7 @@ import json
 import os
 import copy
 import math
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -376,7 +377,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
 		
-		self.findReplaceDialogue = UI.findReplace.findReplace()
+		self.findReplaceDialogue = UI.findReplace.findReplace(self)
 
 		
 	def createCurrentProjectByOpening(self):
@@ -398,6 +399,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			self.commentsPane.insertWidget(0,self.findReplaceDialogue)
 			self.findReplaceDialogue.show()
 			self.findReplaceDialogue.visible = True
+
 	def onChangeText(self): #in display score module
 		if len(self.activeFileTextbox.toPlainText()) == 0:
 			self.EfficacyHexagon.deactivate(True)
@@ -492,10 +494,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		colourToUse.setNamedColor("#d9dedb")
 		formatToUse.setBackground(colourToUse)
 		PyQt5.QtGui.QTextCursor(self.activeFileTextbox.textCursor().block()).setBlockFormat(formatToUse)
-		
-
-
-		
 	
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()

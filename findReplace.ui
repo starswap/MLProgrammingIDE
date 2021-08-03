@@ -54,7 +54,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPlainTextEdit" name="plainTextEdit">
+       <widget class="QPlainTextEdit" name="findBox">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -67,7 +67,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPlainTextEdit" name="plainTextEdit_2">
+       <widget class="QPlainTextEdit" name="replaceBox">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -85,7 +85,7 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="findNextButton">
           <property name="maximumSize">
            <size>
             <width>50</width>
@@ -106,7 +106,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="replaceButton">
           <property name="maximumSize">
            <size>
             <width>50</width>
@@ -127,7 +127,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="closeButton">
           <property name="maximumSize">
            <size>
             <width>50</width>
