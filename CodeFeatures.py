@@ -1,5 +1,6 @@
 import PyQt5
 import re
+import math
 class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 	"""Performs syntax highlighting on the text typed in the active file textbox. Subclass of QSyntaxsHighlighter, which performs all the styling using the predefined method setFormat(start,length,format). We override highlightBlock which is called automatically by Qt, to add our own styling rules"""
 	def __init__(self,associatedTextEdit):
@@ -98,20 +99,36 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		#At the end, if we are one """ short, the comment must continue onto the next line. Therefore we should highlight all of the rest of this line. When the next line is highlighted we will deal with the need to continue highlighting at the start of that one.		
 		if self.currentBlockState() == 1:
 			self.setFormat(tripleQComment[-1],len(lineToHighlight)-tripleQComment[-1]+3,formatToUse)	
+		
 
-def writeLineNumbers(lineNumberBox,activeFileBox):
-
-	print(lineNumberBox.fontMetrics().lineSpacing())
-	print(activeFileBox.fontMetrics().lineSpacing())
-
-	lines = activeFileBox.height()//activeFileBox.fontMetrics().height() # https://stackoverflow.com/questions/43502014/pyqt4-how-many-lines-are-visible-in-qtextedit-at-once-without-scrolling
-	text = ""
-	for i in range(lines):
-		text += str(i) + "\n"
-	lineNumberBox.setEnabled(False)
-	lineNumberBox.setHtml("<p style='text-align:right;'>"+text+"</p>")
+def onNewline(activeFileBox,lineNumbersBox):
+	"""Runs every time the user presses the return or enter key inside the active file textbox. Does two things:
+		1. Indents the new line so that the indentation matches the previous line, reduced if there was a return on the previous line and increased if there was a colon
+		2. Checks if we need to add more line numbers to the line number box and if so adds them
+	"""
 	
-#fix alignment -     ui->textEdit->setText("20190226");
-    Qt::AlignmentFlag a=Qt::AlignHCenter;//Centering effect
-         / / Be careful, change the text alignment of this sentence, must be placed behind the setText to have an effect
-    ui->textEdit->setAlignment(a);??
+	if activeFileBox.document().lineCount() == lineNumbersBox.document().lineCount(): #If, before adding the new line the user requested by pressing enter, we have the same number of lines in the active file textbox as line numbers in the line number box, when we add a new line we will need a new line number...
+		lineNumbersBox.append(str(lineNumbersBox.document().lineCount()+1)) #... so put the next line number into the line number box
+
+	prevLine = activeFileBox.textCursor().block().text() #The line before the newline. We will check to see how many tabs this contains and if it contains any modifiers (: or return) which would change the number of tabs in the next line.
+	
+	if prevLine[-1] == ":": #If the last line ends in a colon
+		newTabs = 1 #We need to put one extra indent on the next line
+	elif "\treturn " in prevLine: #If the last line is a return statement we drop out of a function call
+		newTabs = -1 #and so there should be one fewer tab on the next line
+	else: #If neither of these are present then we don't need to modify it
+		newTabs = 0
+
+	#Count the number of tabs at the front of the previous line and add this to the amount we wanted to modify by
+	for char in prevLine: 
+		if char == "\t":
+			newTabs += 1
+		else:
+        		break #The first time a character we check is not a tab, we break out of the loop so that we only check for tabs at the front of the line and not elsewhere in the line
+
+	oldCurPos = activeFileBox.textCursor().position() #We need to save the position of the cursor as...
+	activeFileBox.setPlainText(activeFileBox.toPlainText()[:oldCurPos] + "\n"+ ("\t"*newTabs) +activeFileBox.toPlainText()[oldCurPos:]) #... when we update the contents of the active file textbox by replacing the existing text with a new text containing the added tabs, we lose the position of the cursor, which just moves to the top of the file.
+	
+	newCur = activeFileBox.textCursor() #Take the textCursor
+	newCur.setPosition(oldCurPos+1+newTabs) #Set its position to be where it was before we messed about with the contents of the textbox, adjusted for the added tabs, 
+	activeFileBox.setTextCursor(newCur) #And re-apply it to the textbox.

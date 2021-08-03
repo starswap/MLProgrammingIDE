@@ -6,6 +6,7 @@ import sys
 import json
 import os
 import copy
+import math
 from pathlib import Path
 from datetime import datetime
 
@@ -350,7 +351,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			font-size: 12pt;
 			background-color: #ababab;
 			text-align: right;
-			color: black;
+			color: white;
 		}""")
 							
 		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
@@ -373,7 +374,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.justDeactivated = False
 			
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
-
+		
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
 		self.setUpActions()
@@ -401,7 +402,10 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		if hasattr(self, "currentProject"):
 			self.currentProject.saveToProject()
-		CodeFeatures.writeLineNumbers(self.lineNumberBox,self.activeFileTextbox)			
+
+		if self.activeFileTextbox.textCursor().block().length() == 0:
+			print("newline")
+		
 
 	def showUnitTestEntry(self):
 		self.enterUnitTests.show()
@@ -412,6 +416,20 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def showTestResults(self):
 		self.utr = UnitTestResultsPopup(self)
 		self.utr.show()
+	
+	def eventFilter(self, obj, event):
+		"""Implemented using https://stackoverflow.com/questions/57698744/how-can-i-know-when-the-enter-key-was-pressed-on-qtextedit
+		In Qt an event filter is an object which is allowed to receive events on behalf of another object before that object gets to see them. We set this class to be a filter for the active file textbox so that it can inspect keys pressed therein. We check for return/enter presses which require the calling of the OnNewline subroutine from the CodeFeatures file. 
+		eventFilter is a special function name which is automatically called by Qt when events are produced 
+		"""
+		if event.type() == PyQt5.QtCore.QEvent.KeyPress and obj is self.activeFileTextbox: #If we got a keypressevent from the active file textbox
+			if ((event.key() == PyQt5.QtCore.Qt.Key_Return) or (event.key() == PyQt5.QtCore.Qt.Key_Enter)) and self.activeFileTextbox.hasFocus(): #and the key pressed was either return (normal text enter key) or enter (on the number pad)
+				CodeFeatures.onNewline(self.activeFileTextbox,self.lineNumberBox) #Call the subroutine that updates the line numbers and the indentation
+				return True #The filtering was successful
+		return super().eventFilter(obj, event) #Otherwise we allow the event system to deal with the event itself.
+
+	
+			
 	def setUpActions(self):
 		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
 		self.actionSave_Project.triggered.connect(self.currentProject.save)
@@ -430,11 +448,38 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.runButton.clicked.connect(self.currentProject.execute)
 		self.runCommandBox.returnPressed.connect(self.currentProject.execute)
 		self.inputButton.clicked.connect(self.currentProject.sendExecuteMessage)
+		
+		self.activeFileTextbox.verticalScrollBar().valueChanged.connect(self.lineNumberBox.verticalScrollBar().setValue) #Tell Qt that when the active file textbox scrolls, the line number textbox should scroll by the same amount so they always stay in line.
 	
 		#Setup right click menus:
 		self.listOfFilesMenu.customContextMenuRequested.connect(self.displayRightClickMenu)
 		
+		self.activeFileTextbox.cursorPositionChanged.connect(self.onMoveCursor)
+		
 		self.enterUnitTests.showExistingTests()
+		
+		self.activeFileTextbox.installEventFilter(self) #Allows this object to process events for the activeFileTextbox, meaning it can intercept certain keypresses needed to trigger subroutines.
+	
+	def onMoveCursor(self):
+
+		#Highlight the current line
+		formatToUse = PyQt5.QtGui.QTextBlockFormat() #Create a blank block format which will be applied to all blocks in the document to remove existing block-level format.
+		start = self.activeFileTextbox.document().firstBlock()
+		while start != self.activeFileTextbox.document().lastBlock(): #For all blocks in the document
+			PyQt5.QtGui.QTextCursor(start).setBlockFormat(formatToUse) #Clear block level formatting
+			start = start.next()
+		PyQt5.QtGui.QTextCursor(start).setBlockFormat(formatToUse)			
+		
+		#Now create the highlight format with the correct colour and apply it to the current line's block
+		formatToUse = PyQt5.QtGui.QTextBlockFormat()
+		colourToUse = PyQt5.QtGui.QColor() #Create a QColor object which is a Qt-defined colour, which can accept colours in a variety of formats including hex.
+		colourToUse.setNamedColor("#d9dedb")
+		formatToUse.setBackground(colourToUse)
+		PyQt5.QtGui.QTextCursor(self.activeFileTextbox.textCursor().block()).setBlockFormat(formatToUse)
+		
+
+
+		
 	
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()
@@ -490,6 +535,7 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.IDEWindow.show()
 		self.IDEWindow.actionNew_Project.trigger()
 	
+
 def setClipboardText(text):
 	global app
 	app.clipboard().setText(text)
