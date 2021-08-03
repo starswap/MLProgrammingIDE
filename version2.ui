@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>801</width>
-    <height>639</height>
+    <height>612</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,7 +63,7 @@
      </widget>
     </item>
     <item row="1" column="3" rowspan="2">
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
+     <layout class="QVBoxLayout" name="commentsPane" stretch="0,0,0">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="sizeConstraint">

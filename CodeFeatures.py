@@ -99,7 +99,7 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		#At the end, if we are one """ short, the comment must continue onto the next line. Therefore we should highlight all of the rest of this line. When the next line is highlighted we will deal with the need to continue highlighting at the start of that one.		
 		if self.currentBlockState() == 1:
 			self.setFormat(tripleQComment[-1],len(lineToHighlight)-tripleQComment[-1]+3,formatToUse)	
-		
+
 
 def onNewline(activeFileBox,lineNumbersBox):
 	"""Runs every time the user presses the return or enter key inside the active file textbox. Does two things:
@@ -112,7 +112,11 @@ def onNewline(activeFileBox,lineNumbersBox):
 
 	prevLine = activeFileBox.textCursor().block().text() #The line before the newline. We will check to see how many tabs this contains and if it contains any modifiers (: or return) which would change the number of tabs in the next line.
 	
-	if prevLine[-1] == ":": #If the last line ends in a colon
+	whereNewLineOccurred = activeFileBox.textCursor().positionInBlock() #Find out at which point in the line the user's cursor was when they pressed etner.
+	if whereNewLineOccurred != 0: #By default the above method returns the position after the one we are interested in (the end of the line before) as this is where the cursor is. The exception is when enter is pressed at the beginning of an existing line, in which case 0 is returned as expected. 
+		whereNewLineOccurred -= 1 #Correct for this defect.
+	
+	if len(prevLine) > 0 and prevLine[whereNewLineOccurred] == ":": #If the last line ends in a colon
 		newTabs = 1 #We need to put one extra indent on the next line
 	elif "\treturn " in prevLine: #If the last line is a return statement we drop out of a function call
 		newTabs = -1 #and so there should be one fewer tab on the next line

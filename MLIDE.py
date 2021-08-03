@@ -18,6 +18,7 @@ import UI.EnterUnitTests
 import UI.UnitTestResults
 import UI.SettingsPopup
 import UI.LoadScreen
+import UI.findReplace
 
 import CodeFeatures
 
@@ -375,6 +376,9 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
 		
+		self.findReplaceDialogue = UI.findReplace.findReplace()
+
+		
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
 		self.setUpActions()
@@ -384,7 +388,16 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		if result[1] == True:
 			self.currentProject = Project(result[0],False,self)
 			self.setUpActions()
-
+			
+	def toggleFindReplace(self):
+		if self.findReplaceDialogue.visible:
+			self.commentsPane.takeAt(0)
+			self.findReplaceDialogue.hide()
+			self.findReplaceDialogue.visible = False
+		else:
+			self.commentsPane.insertWidget(0,self.findReplaceDialogue)
+			self.findReplaceDialogue.show()
+			self.findReplaceDialogue.visible = True
 	def onChangeText(self): #in display score module
 		if len(self.activeFileTextbox.toPlainText()) == 0:
 			self.EfficacyHexagon.deactivate(True)
@@ -427,8 +440,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 				CodeFeatures.onNewline(self.activeFileTextbox,self.lineNumberBox) #Call the subroutine that updates the line numbers and the indentation
 				return True #The filtering was successful
 		return super().eventFilter(obj, event) #Otherwise we allow the event system to deal with the event itself.
-
-	
 			
 	def setUpActions(self):
 		self.listOfFilesMenu.itemClicked.connect(self.currentProject.switchToFile)
@@ -459,7 +470,12 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.enterUnitTests.showExistingTests()
 		
 		self.activeFileTextbox.installEventFilter(self) #Allows this object to process events for the activeFileTextbox, meaning it can intercept certain keypresses needed to trigger subroutines.
-	
+		
+		self.actionFind_Replace.triggered.connect(self.toggleFindReplace)		
+		
+		self.actionCopy.triggered.connect(self.activeFileTextbox.copy)
+		self.actionPaste.triggered.connect(self.activeFileTextbox.paste)
+		
 	def onMoveCursor(self):
 
 		#Highlight the current line
