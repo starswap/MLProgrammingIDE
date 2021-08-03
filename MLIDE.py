@@ -476,6 +476,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	
 		#Setup right click menus:
 		self.listOfFilesMenu.customContextMenuRequested.connect(self.displayRightClickMenu)
+		self.activeFileTextbox.customContextMenuRequested.connect(self.displayRightClickMenu)
+		self.EfficiencyHexagon.customContextMenuRequested.connect(self.displayRightClickMenu)		
+		self.EleganceHexagon.customContextMenuRequested.connect(self.displayRightClickMenu)
+		self.EfficacyHexagon.customContextMenuRequested.connect(self.displayRightClickMenu)		
+		self.ReadabilityHexagon.customContextMenuRequested.connect(self.displayRightClickMenu)
 		
 		self.activeFileTextbox.cursorPositionChanged.connect(self.onMoveCursor)
 		
@@ -488,6 +493,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.actionCopy.triggered.connect(self.activeFileTextbox.copy)
 		self.actionPaste.triggered.connect(self.activeFileTextbox.paste)
+		
+		self.actionFormat_Code.triggered.connect(lambda : self.activeFileTextbox.setPlainText(CodeFeatures.formatCode(self.activeFileTextbox.toPlainText())) )
 		
 	def onMoveCursor(self):
 		pass #breaks undo/redo
@@ -509,9 +516,25 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()
 		sender = self.sender()
+		actions = []
 		if str(type(sender)) == "<class 'PyQt5.QtWidgets.QListWidget'>":
-			actions = [("Run file",self.currentProject.runFile),("Copy file path",lambda : setClipboardText(os.path.join(self.currentProject.directoryPath,sender.selectedItems()[0].text())))]
-
+			actions = [("Run file",self.currentProject.runFile),("Copy file path",lambda : setClipboardText(os.path.join(self.currentProject.directoryPath,sender.selectedItems()[0].text()))),("Switch to file",lambda : self.currentProject.switchToFile(sender.selectedItems()[0]))]
+		elif sender == self.EfficiencyHexagon:
+			actions = [("Access resources to improve efficiency",self.EfficiencyHexagon.onRightClick)]
+		elif sender == self.EleganceHexagon:
+			actions = [("Access resources to improve elegance",self.EleganceHexagon.onRightClick)]
+		elif sender == self.ReadabilityHexagon:
+			actions = [("Access resources to improve readability",self.ReadabilityHexgaon.onRightClick)]
+		elif sender == self.EfficacyHexagon:
+			actions = [("Access resources to improve efficacy",self.EfficacyHexagon.onRightClick)]									
+		elif sender == self.activeFileTextbox:
+			actions.append(("Paste",self.activeFileTextbox.paste))
+			if self.activeFileTextbox.textCursor().hasSelection():
+				actions.append(("Copy",self.activeFileTextbox.copy))
+				actions.append(("Display complexity analyser results",DisplayComplexityAnalyserResults))
+				actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))
+				actions.append(("Generate code comments",ApplyCommentGeneration()))
+			
 		for text,call in actions:
 			action = PyQt5.QtWidgets.QAction(menu)
 			action.setText(text)

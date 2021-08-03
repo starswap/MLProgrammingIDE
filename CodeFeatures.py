@@ -136,3 +136,45 @@ def onNewline(activeFileBox,lineNumbersBox):
 	newCur = activeFileBox.textCursor() #Take the textCursor
 	newCur.setPosition(oldCurPos+1+newTabs) #Set its position to be where it was before we messed about with the contents of the textbox, adjusted for the added tabs, 
 	activeFileBox.setTextCursor(newCur) #And re-apply it to the textbox.
+	
+def formatCode(code):
+	"""Takes a string of python code and adds tab characters where it thinks they will be needed in order to ensure that the code is correctly indented. Note that this can only ever be a guess as it depends on the logic of the program that the user has designed"""
+	lines = code.split("\n") #We will successively compute on each line of the code so first split to lines
+	currentIndent = 0 #This value stores the correct indent we think the current line should have
+	outputText = "" #This string is the result of the formatting which will be built up throughout the function call and then returned at the end.
+	lastIf = 0 #Stores the indentation level of the most recent if command.
+	lastTry = 0 #stores the indentation level of the most recent try command
+	
+	for line in lines:
+		#Count how many tabs are already present at the beginning of the current line
+		existingTabs = 0 
+		for char in line: 
+			if char == "\t":
+				existingTabs += 1
+			else:
+				break
+
+		if ("elif " in line) or ("else:" in line): #If this line is an elif or an else, we should automatically demote it to the same indentation as the previous if which it matches with
+			currentIndent = lastIf
+		elif ("except " in line) or ("finally:" in line) or ("except:" in line): #Make sure excepts and finallys match trys in indent
+			currentIndent = lastTry
+		
+		if existingTabs > currentIndent: #More tabs than expected
+			line = line[(existingTabs-currentIndent):] #So reduce by the delta
+		elif existingTabs < currentIndent: #Fewer tabs than expected
+			line = "\t"*(currentIndent-existingTabs) + line #So increase by the delta
+			
+		outputText += line + "\n" #Save the new version of the current line in the accumulator variable we will return
+		
+		if len(line) > 0 and line[-1] == ":": #the line endswith a colon so the right indent increases by one in Python for the NEXT line
+			if "if " in line: #If we have an if command, save the current indentation level so we can later jump back to match this on a corresponding elif or else.
+				lastIf = currentIndent
+			elif ("try:") in line: #If we have a try command, save the indent so except and finally can later be matched up
+				lastTry = currentIndent
+			
+			currentIndent += 1 
+		elif "\treturn " in line: #A return was detected so we should drop the required indent by one for the next line
+			currentIndent -= 1
+		
+	return outputText #The result of this function (the returned outputText value) is then put into the active file textbox to replace the existing unformatted code
+

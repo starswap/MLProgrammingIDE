@@ -119,6 +119,7 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.activeFileTextbox.setFont(font)
+        self.activeFileTextbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.activeFileTextbox.setStyleSheet("")
         self.activeFileTextbox.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.activeFileTextbox.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)

@@ -8,7 +8,7 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 		self.score = 9.8
 		self.active = True
 		self.forceInactive = False
-		
+		self.setContextMenuPolicy(PyQt5.QtCore.Qt.CustomContextMenu)
 	def onClick(self):
 		"""Runs when the hexagon gets clicked on"""
 		if self.active == True:
