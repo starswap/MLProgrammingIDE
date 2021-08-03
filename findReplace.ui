@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>156</width>
-    <height>87</height>
+    <height>106</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -76,6 +76,18 @@
         </property>
         <property name="placeholderText">
          <string>Replace</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="regex">
+        <property name="font">
+         <font>
+          <pointsize>7</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Regular Expression</string>
         </property>
        </widget>
       </item>

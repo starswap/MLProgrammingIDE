@@ -37,7 +37,6 @@ class Ui_MainWindow(object):
         font.setPointSize(11)
         self.shellInputBox.setFont(font)
         self.shellInputBox.setStyleSheet("background-color: rgb(46, 52, 54); color: rgb(255, 255, 255)")
-        self.shellInputBox.setPlainText("")
         self.shellInputBox.setObjectName("shellInputBox")
         self.gridLayout.addWidget(self.shellInputBox, 3, 1, 1, 2)
         self.commentsPane = QtWidgets.QVBoxLayout()

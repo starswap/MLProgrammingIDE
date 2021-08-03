@@ -54,9 +54,6 @@
       <property name="styleSheet">
        <string notr="true">background-color: rgb(46, 52, 54); color: rgb(255, 255, 255)</string>
       </property>
-      <property name="plainText">
-       <string notr="true"/>
-      </property>
       <property name="placeholderText">
        <string>Type input to the program here and press send. Works when program running.</string>
       </property>

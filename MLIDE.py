@@ -7,7 +7,6 @@ import json
 import os
 import copy
 import math
-import re
 from pathlib import Path
 from datetime import datetime
 
@@ -391,14 +390,19 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			self.setUpActions()
 			
 	def toggleFindReplace(self):
-		if self.findReplaceDialogue.visible:
-			self.commentsPane.takeAt(0)
-			self.findReplaceDialogue.hide()
-			self.findReplaceDialogue.visible = False
-		else:
-			self.commentsPane.insertWidget(0,self.findReplaceDialogue)
-			self.findReplaceDialogue.show()
-			self.findReplaceDialogue.visible = True
+		"""Shows/hides the find/replace dialogue when the user presses ctrl-F or find/replace in the menu"""
+		if self.findReplaceDialogue.visible: #if it is already showing then hide it
+			self.commentsPane.takeAt(0) #Remove it from the layout it was in.
+			self.findReplaceDialogue.hide() #Hide it on screen
+			self.findReplaceDialogue.visible = False #save the state as not visible so that later we can use this to know whether to show or hide
+			self.activeFileTextbox.setFocus() #Move the focus back to the active file textbox so the use can keep editing
+			self.activeFileTextbox.setExtraSelections([]) #Remove the highlights made by the find tool
+		else:#if it is hidden, show it
+			self.commentsPane.insertWidget(0,self.findReplaceDialogue) #Add the find/replace GUI to the commentsPane layout at the top (position 0)
+			self.findReplaceDialogue.show() #Show it
+			self.findReplaceDialogue.visible = True #remember that it's visible
+			self.findReplaceDialogue.findBox.setFocus() #Move the user's focus into the find box
+			self.findReplaceDialogue.previousFind = "" #This value is used to know whether pressing the find button should start searching from the top of the file again or continue from the last match. We say that it should start again as the find value is compared against previousFind and it will be different to the blank string, leading to the find starting again from the top
 
 	def onChangeText(self): #in display score module
 		if len(self.activeFileTextbox.toPlainText()) == 0:
@@ -441,6 +445,12 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			if ((event.key() == PyQt5.QtCore.Qt.Key_Return) or (event.key() == PyQt5.QtCore.Qt.Key_Enter)) and self.activeFileTextbox.hasFocus(): #and the key pressed was either return (normal text enter key) or enter (on the number pad)
 				CodeFeatures.onNewline(self.activeFileTextbox,self.lineNumberBox) #Call the subroutine that updates the line numbers and the indentation
 				return True #The filtering was successful
+				
+		elif event.type() == PyQt5.QtCore.QEvent.KeyPress and obj is self.findReplaceDialogue.findBox:
+			if ((event.key() == PyQt5.QtCore.Qt.Key_Return) or (event.key() == PyQt5.QtCore.Qt.Key_Enter)) and self.findReplaceDialogue.findBox.hasFocus(): 
+				self.findReplaceDialogue.find()
+				return True	
+
 		return super().eventFilter(obj, event) #Otherwise we allow the event system to deal with the event itself.
 			
 	def setUpActions(self):
@@ -472,15 +482,16 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.enterUnitTests.showExistingTests()
 		
 		self.activeFileTextbox.installEventFilter(self) #Allows this object to process events for the activeFileTextbox, meaning it can intercept certain keypresses needed to trigger subroutines.
-		
+		self.findReplaceDialogue.findBox.installEventFilter(self) #Allows this object to process events for the findReplaceDialogue, meaning it can intercept certain keypresses needed to trigger subroutines.
+	
 		self.actionFind_Replace.triggered.connect(self.toggleFindReplace)		
 		
 		self.actionCopy.triggered.connect(self.activeFileTextbox.copy)
 		self.actionPaste.triggered.connect(self.activeFileTextbox.paste)
 		
 	def onMoveCursor(self):
-
-		#Highlight the current line
+		pass #breaks undo/redo
+		"""		#Highlight the current line
 		formatToUse = PyQt5.QtGui.QTextBlockFormat() #Create a blank block format which will be applied to all blocks in the document to remove existing block-level format.
 		start = self.activeFileTextbox.document().firstBlock()
 		while start != self.activeFileTextbox.document().lastBlock(): #For all blocks in the document
@@ -494,7 +505,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		colourToUse.setNamedColor("#d9dedb")
 		formatToUse.setBackground(colourToUse)
 		PyQt5.QtGui.QTextCursor(self.activeFileTextbox.textCursor().block()).setBlockFormat(formatToUse)
-	
+		"""	
 	def displayRightClickMenu(self,point):
 		menu = PyQt5.QtWidgets.QMenu()
 		sender = self.sender()
