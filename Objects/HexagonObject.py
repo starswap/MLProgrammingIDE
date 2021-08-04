@@ -96,6 +96,9 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 		
 		#Stop painting before we return
 		myPainter.end()
+	
+	def onRightClick(self):
+		pass
 
 		
 		

@@ -513,35 +513,37 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		formatToUse.setBackground(colourToUse)
 		PyQt5.QtGui.QTextCursor(self.activeFileTextbox.textCursor().block()).setBlockFormat(formatToUse)
 		"""	
-	def displayRightClickMenu(self,point):
-		menu = PyQt5.QtWidgets.QMenu()
-		sender = self.sender()
-		actions = []
-		if str(type(sender)) == "<class 'PyQt5.QtWidgets.QListWidget'>":
+	def displayRightClickMenu(self,point): #(point is the point on screen that was clicked)
+		"""Called when the customContextMenu requested signal is emitted by any of the widgets I have set to have a custom right click menu. Generates the correct right click menu based on the object that we right clicked on and returns that."""
+		menu = PyQt5.QtWidgets.QMenu() #Create a new menu to populate with options
+		sender = self.sender() #This is the widget which was right clicked on
+		actions = [] #This will be a list of tuples -> text to display on right click menu and subroutine to execute when the text is clicked. We later iterate over all actions in this array and add them to the menu in one go. As it takes several lines of code to create and add an action it is more code-efficient to write it like this.
+		
+		if str(type(sender)) == "<class 'PyQt5.QtWidgets.QListWidget'>": #right clicked on a file in the list of files menu
 			actions = [("Run file",self.currentProject.runFile),("Copy file path",lambda : setClipboardText(os.path.join(self.currentProject.directoryPath,sender.selectedItems()[0].text()))),("Switch to file",lambda : self.currentProject.switchToFile(sender.selectedItems()[0]))]
-		elif sender == self.EfficiencyHexagon:
-			actions = [("Access resources to improve efficiency",self.EfficiencyHexagon.onRightClick)]
-		elif sender == self.EleganceHexagon:
-			actions = [("Access resources to improve elegance",self.EleganceHexagon.onRightClick)]
-		elif sender == self.ReadabilityHexagon:
-			actions = [("Access resources to improve readability",self.ReadabilityHexgaon.onRightClick)]
-		elif sender == self.EfficacyHexagon:
-			actions = [("Access resources to improve efficacy",self.EfficacyHexagon.onRightClick)]									
-		elif sender == self.activeFileTextbox:
+		elif sender == self.EfficiencyHexagon: #Right clicked on the efficiency hexagon
+			actions = [("Access help to improve efficiency",self.EfficiencyHexagon.onRightClick)]
+		elif sender == self.EleganceHexagon: #right clicked on the elegance hexagon
+			actions = [("Access help to improve elegance",self.EleganceHexagon.onRightClick)]
+		elif sender == self.ReadabilityHexagon: #right clicked on the readability hexagon
+			actions = [("Access help to improve readability",self.ReadabilityHexagon.onRightClick)]
+		elif sender == self.EfficacyHexagon: #right clicked on the efficacy hexagon
+			actions = [("Access help to improve efficacy",self.EfficacyHexagon.onRightClick)]									
+		elif sender == self.activeFileTextbox: #right clicked inside the active file textbox
 			actions.append(("Paste",self.activeFileTextbox.paste))
-			if self.activeFileTextbox.textCursor().hasSelection():
+			actions.append(("Display complexity analyser results",DisplayComplexityAnalyserResults))
+			actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))			
+			if self.activeFileTextbox.textCursor().hasSelection(): #We can only do these actions if something is highlighted
 				actions.append(("Copy",self.activeFileTextbox.copy))
-				actions.append(("Display complexity analyser results",DisplayComplexityAnalyserResults))
-				actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))
-				actions.append(("Generate code comments",ApplyCommentGeneration()))
+				actions.append(("Generate code comments",ApplyCommentGeneration))
 			
-		for text,call in actions:
-			action = PyQt5.QtWidgets.QAction(menu)
-			action.setText(text)
-			action.triggered.connect(call)
-			menu.addAction(action)
+		for text,call in actions: #Now we are going to actually create and add all the actions to the menu
+			action = PyQt5.QtWidgets.QAction(menu) #Create a new QAction which is a menu option that calls a function when trigered
+			action.setText(text) #set the corresponding text for the option
+			action.triggered.connect(call) #...and the subroutine to run when triggered 
+			menu.addAction(action) #and add to menu
 
-		menu.exec_(self.sender().mapToGlobal(point))			
+		menu.exec_(self.sender().mapToGlobal(point)) #Puts the menu on screen at the right point (mapToGlobal converts the position in the sender object to a global position so that the position at which the menu displays (arg to exec_) is where the user right clicked)			
 	
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 	def __init__(self, IDEWindow, parent=None):
@@ -582,8 +584,11 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.hide()
 		self.IDEWindow.show()
 		self.IDEWindow.actionNew_Project.trigger()
+def DisplayComplexityAnalyserResults():
+	pass
 	
-
+def ApplyCommentGeneration():
+	pass
 def setClipboardText(text):
 	global app
 	app.clipboard().setText(text)
