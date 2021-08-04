@@ -9,6 +9,7 @@ import copy
 import math
 from pathlib import Path
 from datetime import datetime
+from ast import literal_eval
 
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
@@ -146,8 +147,8 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 				#For every column in the current table, use the second row to get the constraints on the user's arguments 
 				for k in range(table.columnCount()):
 					try:
-						constr1 = table.item(1,k).text() #Read the constraint from the table
-					except AttributeError: #If this occurs, there was a blank cell so just use "" as no constraint provided
+						constr1 = literal_eval(table.item(1,k).text()) #Read the constraint from the table
+					except: #If this occurs, there was a blank cell so just use "" as no constraint provided
 						constr1 = ""
 					constraints.append(constr1) #Save the current constraint and then we can get the next one
 					
@@ -244,7 +245,7 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 		self.setWindowTitle("Unit Test Results at " + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
 		
 		for func in self.MainIDE.currentProject.unitTests: #for every function that we need to run tests against
-			results, outputs = func.executeTests() #Get the results of the tests (list of bools) and the outputs of the tests
+			results, outputs, times = func.executeTests() #Get the results of the tests (list of bools) and the outputs of the tests
 
 			#Create a label with a monospace font with the name of the function we are testing and add it to the dialogue box
 			newFunctionName = PyQt5.QtWidgets.QLabel(self) 
@@ -265,8 +266,8 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 			#Create a table widget which will contain the results of the unit tests for one function
 			newFunctionTable = PyQt5.QtWidgets.QTableWidget(self)
 			newFunctionTable.setRowCount(len(func.inputValues)) #A row for each test
-			newFunctionTable.setColumnCount(func.numberOfInputs+3) #there is one column for each input argument to the new function plus 1 for expected output, 1 for actual output and 1 for Pass/Fail
-			newFunctionTable.setHorizontalHeaderLabels(["Input" + ALPH[i] for i in range(func.numberOfInputs)]+["Expected","Actual","Pass/Fail"]) 
+			newFunctionTable.setColumnCount(func.numberOfInputs+4) #there is one column for each input argument to the new function plus 1 for expected output, 1 for actual output and 1 for Pass/Fail and 1 for time
+			newFunctionTable.setHorizontalHeaderLabels(["Input" + ALPH[i] for i in range(func.numberOfInputs)]+["Expected","Actual","Pass/Fail","Exe Time"]) 
 			self.resultsUI.ResultsLayout.addWidget(newFunctionTable) #Display the table by adding it to the layout
 			
 			for testNo in range(len(func.inputValues)): # For every test that we need to execute against the function we are testing
@@ -282,8 +283,13 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 				else: #the test failed
 					emoticon.setBackground(PyQt5.QtGui.QColor("darkred")) #red = negative
 				newFunctionTable.setItem(testNo,func.numberOfInputs+2,emoticon) #Add the cell to the table so it is displayed
+				newFunctionTable.setItem(testNo,func.numberOfInputs+3,PyQt5.QtWidgets.QTableWidgetItem(times[testNo])) #Add the cell to the table so it is displayed
+				
+				print(func.inputConstraints)
+				print(func.generateMockInput(20))
+				
 		super().show() #Actually show the dialogue we've built by calling the superclass method.
-		
+			
 	
 
 
