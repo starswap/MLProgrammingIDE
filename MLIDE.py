@@ -387,7 +387,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		if len(sys.argv) == 1 and sys.argv[0] != "MLIDE.py": #In development we have python so we get an additional argument which is the name of the source to run. In production this becomes the exename so no longer an argument.
 			self.currentProject = Project(sys.argv[0],True,self)
 			self.setUpActions()
-
 		
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
@@ -398,6 +397,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		if result[1] == True:
 			self.currentProject = Project(result[0],False,self)
 			self.setUpActions()
+			self.actionNew_File.trigger() #The user first has to create a new file
 			
 	def toggleFindReplace(self):
 		"""Shows/hides the find/replace dialogue when the user presses ctrl-F or find/replace in the menu"""

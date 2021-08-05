@@ -85,7 +85,8 @@ class Project():
 
 		self.unitTests = []
 		
-		directory = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(caption="Select the directory in which the project folder should be created")[0]			
+		directory = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(caption="Select the directory in which to store the project data")		
+		print(directory)	
 		#Create the project folder as where the user said, named after the project, unless the directory already exists, in which case. 
 		if not(os.path.exists(os.path.join(directory,projectName))):
 			self.directoryPath = os.path.join(directory,projectName) #Have to use os.path.join to work across platforms.
@@ -107,10 +108,9 @@ class Project():
 				
 		#Set the window title
 		self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name)
-		self.associatedWindow.actionEnter_Unit_Tests.trigger() #Projects start with getting unit tests
-		self.associatedWindow.activeFileTextbox.setPlaceholderText("You need to create a new file")
+		#self.associatedWindow.actionEnter_Unit_Tests.trigger() #Projects start with getting unit tests
+		self.associatedWindow.activeFileTextbox.setPlaceholderText("You need to create a new file first")
 		self.save()
-		self.associatedWindow.actionNew_File.trigger() #Projects start with getting unit tests
 		
 	def openFile(self,filename):
 		"""Open an existing file in the project into the IDE"""
