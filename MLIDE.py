@@ -7,6 +7,7 @@ import json
 import os
 import copy
 import math
+import sys
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
@@ -312,6 +313,7 @@ class Settings(PyQt5.QtWidgets.QDialog):
 			f.close()
 		except json.decoder.JSONDecodeError:
 			pass #No settings file
+			
 	def closeEvent(self, event):
 		self.settings["pythonCommand"] = self.ui.runCommand.text()
 		f = open(os.path.join(str(Path.home()),".mlidesettings"),"w")
@@ -380,6 +382,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
 		
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
+		
+		
+		if len(sys.argv) == 1 and sys.argv[0] != "MLIDE.py": #In development we have python so we get an additional argument which is the name of the source to run. In production this becomes the exename so no longer an argument.
+			self.currentProject = Project(sys.argv[0],True,self)
+			self.setUpActions()
 
 		
 	def createCurrentProjectByOpening(self):

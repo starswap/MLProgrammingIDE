@@ -75,6 +75,7 @@ class Project():
 			
 	def newProject(self,projectName):
 		"""Populates the attributes of the project by creating a new one"""
+		
 		if projectName == "": #If no name is provided this cannot work because we need to name the file after the project.
 			projectName = "Untitled" + str(datetime.utcnow()) #So use Untitled + the time of creation in utc.
 		self.name = projectName
@@ -83,12 +84,13 @@ class Project():
 		
 
 		self.unitTests = []
-					
-		#Create the project folder as a subdirectory of the user's home directory, named after the project, unless the directory already exists, in which case. 
-		if not(os.path.exists(os.path.join(str(Path.home()),projectName))):
-			self.directoryPath = os.path.join(str(Path.home()),projectName) #Have to use os.path.join to work across platforms.
+		
+		directory = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(caption="Select the directory in which the project folder should be created")[0]			
+		#Create the project folder as where the user said, named after the project, unless the directory already exists, in which case. 
+		if not(os.path.exists(os.path.join(directory,projectName))):
+			self.directoryPath = os.path.join(directory,projectName) #Have to use os.path.join to work across platforms.
 		else:
-			self.directoryPath = os.path.join(str(Path.home()),projectName+str(datetime.utcnow()))
+			self.directoryPath = os.path.join(directory,projectName+str(datetime.utcnow()))
 		os.mkdir(self.directoryPath)
 		
 		self.runCommand = "e.g. python3 " + self.directoryPath + "..."
@@ -202,6 +204,15 @@ class Project():
 	def execute(self):
 		"""Run the project's runCommand as a subprocess inside the IDE, attached to the current project object (this allows it to be accessed later)"""
 		self.save()
+		
+		#Remind the user to set a run command if they have forgotten to
+		if self.runCommand == "":
+			dialogue = PyQt5.QtWidgets.QMessageBox(self.associatedWindow)
+			dialogue.setIcon(PyQt5.QtWidgets.QMessageBox.Warning)
+			dialogue.setText("Run command is blank - cannot execute. Please set a run command before running your project.")
+			dialogue.setWindowTitle("Run Command Error")
+			dialogue.show()
+			return
 		
 		#Reset the text of the output and input windows
 		self.associatedWindow.outputWindow.setPlainText("") 

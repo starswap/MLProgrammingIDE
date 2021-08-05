@@ -38,7 +38,7 @@ class UnitTest():
 		#https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 		#https://realpython.com/primer-on-jinja-templating/
 		TEMPLATE = """import importlib.util
-spec = importlib.util.spec_from_file_location("moduleToTest", "{{filePath}}")
+spec = importlib.util.spec_from_file_location("moduleToTest", r"{{filePath}}")
 codeToTest = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(codeToTest)
 print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor %}),end="")
@@ -131,7 +131,7 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 					raise TypeError("Only List of Int, Float, Bool or Char supported")
 			return res
 		elif self.types[0] == "":
-			return None
+			raise TypeError("No typing information provided for this argument")
 		else:
 			raise TypeError("Complexity Analysis only for Int, Float, String, List of Int/Float/Bool/Char arguments") #FUTURE RELEASE: Support more types on complexity analysis
 
