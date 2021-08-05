@@ -383,10 +383,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
 		
-		if len(sys.argv) == 2:
-			self.currentProject = Project(sys.argv[1],True,self)
-			self.setUpActions()
-		
 		
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
@@ -605,8 +601,14 @@ def setClipboardText(text):
 
 app = PyQt5.QtWidgets.QApplication(sys.argv)
 IDE_Window = MLIDE()
-Load_Screen = LoadScreen(IDE_Window)
-Load_Screen.show()
+	
+if len(sys.argv) == 2: #When the user double clicks on an mlideproj file in windows or when they put the file as the cmd line arg this occurs
+	IDE_Window.currentProject = Project(sys.argv[1],True,self)
+	IDE_Window.setUpActions()
+	IDE_Window.show()
+else:
+	Load_Screen = LoadScreen(IDE_Window)
+	Load_Screen.show()
 app.exec_()
 
 """		
