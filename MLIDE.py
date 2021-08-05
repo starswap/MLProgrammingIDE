@@ -384,8 +384,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
 		
 		
-		if len(sys.argv) == 1 and sys.argv[0] != "MLIDE.py": #In development we have python so we get an additional argument which is the name of the source to run. In production this becomes the exename so no longer an argument.
-			self.currentProject = Project(sys.argv[0],True,self)
+		if len(sys.argv) == 2:
+			self.currentProject = Project(sys.argv[1],True,self)
 			self.setUpActions()
 		
 	def createCurrentProjectByOpening(self):
