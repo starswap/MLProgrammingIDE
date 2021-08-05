@@ -383,11 +383,9 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
 		
-		with open("test.txt") as f:
-			f.write(str(sys.argv))
-#		if len(sys.argv) == 2:
-#			self.currentProject = Project(sys.argv[1],True,self)
-#			self.setUpActions()
+		if len(sys.argv) == 2:
+			self.currentProject = Project(sys.argv[1],True,self)
+			self.setUpActions()
 		
 		
 	def createCurrentProjectByOpening(self):
