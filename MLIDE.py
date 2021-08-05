@@ -384,9 +384,10 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
 		
 		
-		if len(sys.argv) == 2:
-			self.currentProject = Project(sys.argv[1],True,self)
-			self.setUpActions()
+		self.activeFileTextbox.setPlainText(str(sys.argv))
+#		if len(sys.argv) == 2:
+#			self.currentProject = Project(sys.argv[1],True,self)
+#			self.setUpActions()
 		
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
