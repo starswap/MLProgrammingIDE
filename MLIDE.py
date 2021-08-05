@@ -603,9 +603,9 @@ app = PyQt5.QtWidgets.QApplication(sys.argv)
 IDE_Window = MLIDE()
 	
 if len(sys.argv) == 2: #When the user double clicks on an mlideproj file in windows or when they put the file as the cmd line arg this occurs
-	IDE_Window.currentProject = Project(sys.argv[1],True,self)
-	IDE_Window.setUpActions()
 	IDE_Window.show()
+	IDE_Window.currentProject = Project(sys.argv[1],True,IDE_Window)
+	IDE_Window.setUpActions()
 else:
 	Load_Screen = LoadScreen(IDE_Window)
 	Load_Screen.show()
