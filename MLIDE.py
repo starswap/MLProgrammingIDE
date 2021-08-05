@@ -285,9 +285,6 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 				newFunctionTable.setItem(testNo,func.numberOfInputs+2,emoticon) #Add the cell to the table so it is displayed
 				newFunctionTable.setItem(testNo,func.numberOfInputs+3,PyQt5.QtWidgets.QTableWidgetItem(times[testNo])) #Add the cell to the table so it is displayed
 				
-			print(func.inputConstraints)
-			print(func.generateMockInput(20))
-				
 		super().show() #Actually show the dialogue we've built by calling the superclass method.
 			
 	

@@ -130,6 +130,8 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 				else:
 					raise TypeError("Only List of Int, Float, Bool or Char supported")
 			return res
+		elif self.types[0] == "":
+			return None
 		else:
-			raise TypeError("Complexity Analysis only forn Int, Float, String, List of Int/Float/Bool/Char arguments") #FUTURE RELEASE: Support more types on complexity analysis
+			raise TypeError("Complexity Analysis only for Int, Float, String, List of Int/Float/Bool/Char arguments") #FUTURE RELEASE: Support more types on complexity analysis
 
