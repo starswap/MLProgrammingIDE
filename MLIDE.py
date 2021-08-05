@@ -474,6 +474,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		shortcut3.activated.connect(self.runCommandBox.setFocus)
 		shortcut4 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+I"),self)		
 		shortcut4.activated.connect(self.shellInputBox.setFocus)
+		shortcut5 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+G"),self)		
+		shortcut5.activated.connect(self.actionFind_Replace.trigger)
+		shortcut6 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+H"),self)		
+		shortcut6.activated.connect(self.actionFind_Replace.trigger)
+		
 		self.runButton.clicked.connect(self.currentProject.execute)
 		self.runCommandBox.returnPressed.connect(self.currentProject.execute)
 		self.inputButton.clicked.connect(self.currentProject.sendExecuteMessage)
