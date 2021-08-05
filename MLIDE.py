@@ -148,8 +148,8 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 				for k in range(table.columnCount()):
 					try:
 						constr1 = literal_eval(table.item(1,k).text()) #Read the constraint from the table
-					except: #If this occurs, there was a blank cell so just use "" as no constraint provided
-						constr1 = ""
+					except: #If this occurs, there was a blank cell so just use [] as no constraint provided
+						constr1 = []
 					constraints.append(constr1) #Save the current constraint and then we can get the next one
 					
 				#Now all remaining rows after 1 and 2 simply represent tests. 
@@ -196,7 +196,7 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 				
 			#For every column in the current table, set the second row to show the constraints on the user's arguments 
 			for k in range(newTable.columnCount()):
-				newTable.setItem(1,k,PyQt5.QtWidgets.QTableWidgetItem(test.inputConstraints[k])) #Read the constraint from the table
+				newTable.setItem(1,k,PyQt5.QtWidgets.QTableWidgetItem(str(test.inputConstraints[k]))) #Read the constraint from the table
 
 			#Now all remaining rows after 1 and 2 simply represent tests. 
 			for i in range(2,newTable.rowCount()): #For each test
@@ -285,8 +285,8 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 				newFunctionTable.setItem(testNo,func.numberOfInputs+2,emoticon) #Add the cell to the table so it is displayed
 				newFunctionTable.setItem(testNo,func.numberOfInputs+3,PyQt5.QtWidgets.QTableWidgetItem(times[testNo])) #Add the cell to the table so it is displayed
 				
-				print(func.inputConstraints)
-				print(func.generateMockInput(20))
+			print(func.inputConstraints)
+			print(func.generateMockInput(20))
 				
 		super().show() #Actually show the dialogue we've built by calling the superclass method.
 			

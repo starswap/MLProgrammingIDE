@@ -13,6 +13,7 @@ class Project():
 	def __init__(self,projectNameOrFilePath,exists,mainWindow):
 		"""Constructor for the project class. Will create a project object then populate its attributes by either opening an existing project or creating a new one"""
 		self.associatedWindow = mainWindow #Because the pseudocode algorithms I designed for the project involve changes to the UI from the ProjectObject (to avoid excessive passsing around), we need to store a handle to the UI window in the project object.
+		self.associatedWindow.listOfFilesMenu.clear()
 		self.unitTests = []
 		self.activeFileIndex = 0		
 		self.fileContents = [] #Will contain the contents of all of the files in the project
@@ -20,6 +21,7 @@ class Project():
 			self.open(projectNameOrFilePath) 
 		else: #If the project does not exist, we came via a new dialogue and so we need to use newProject to populate
 			self.newProject(projectNameOrFilePath)
+
 
 		
 	def open(self,projectFilePath):

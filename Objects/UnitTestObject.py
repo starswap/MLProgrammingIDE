@@ -83,16 +83,15 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 	def generateMockInput(self,sizeConstraint):
 		""" Uses the type and constraint information stored about user functions by the unit test object in order to generate realistic input to the function, of a given length, which can be used to examine the complexity of the function. The sizeConstraint argument gives an idea of how big the input should be and represents the n value in big o notation. The way it is used depends on the type of input required."""
 		#FUTURE RELEASE: Currently we only support complexity analysis on the first input of a function. 
-		
+		print(self.inputConstraints)
 		if self.types[0] == "Int" or self.types[0] == "Float": 
 			mini = -10000 #Initialise valid minimum and maximum values
 			maxi = 10000
 			for constraint in self.inputConstraints[0]: #FUTURE RELEASE: Add more constraint types e.g. amount of dp for float
-				if type(constraint) == (int,int): #The user has provided a range of acceptable values.
-					mini = constraint[0]
-					maxi = constraint[1]
-					
-			if sizeConstraint >= mini and sizeConstraint <= maxi: #We can just use the size constraint as it is a number in the valid range
+				if constraint[0] == "Range": #The user has provided a range of acceptable values.
+					mini = constraint[1]
+					maxi = constraint[2]
+			if (sizeConstraint >= mini) and (sizeConstraint <= maxi): #We can just use the size constraint as it is a number in the valid range
 				return sizeConstraint
 			else:
 				raise ValueError("Size constraint not within bounds for int/float size") #the sizeConstraint is outside the valid range so cannot be used
@@ -100,11 +99,11 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 		elif self.types[0] == "String":
 			alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" #Initialise the alphabet
 			for constraint in self.inputConstraints[0]: #Go through all constraints
-				if type(constraint) == (int,int): #User has provided a length range
-					if not(sizeConstraint >= constraint[0] and sizeConstraint <= constraint[1]): #The length that we were given is invalid
+				if constraint[0] == "Length": #User has provided a length range
+					if not(sizeConstraint >= constraint[1] and sizeConstraint <= constraint[2]): #The length that we were given is invalid
 						raise ValueError("Size constraint not within valid bounds for string length")
-				elif type(constraint) == str: #User has provided a set of valid characters
-					alphabet = constraint
+				elif constraint[0] == "Alphabet": #User has provided a set of valid characters
+					alphabet = constraint[1]
 				else: #FUTURE RELEASE - add more input constraint types
 					raise TypeError("Input constraint format unrecognised")
 			res = ""
@@ -114,9 +113,8 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 
 		elif self.types[0][:4] == "List": #List of sometype
 			for constraint in self.inputConstraints[0]:
-				print(constraint)
-				if type(constraint) == (int,int): #Min/Max length constraint provided
-					if sizeConstraint < constraint[0] or sizeConstraint > constraint[1]:
+				if constraint[0] == "Length": #Min/Max length constraint provided
+					if sizeConstraint < constraint[1] or sizeConstraint > constraint[2]:
 						raise ValueError("Size constraint not within valid bounds for list length")
 			res = []
 			elementType = self.types[0][4:] #Type of the elements of the list
