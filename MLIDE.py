@@ -15,6 +15,8 @@ from ast import literal_eval
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
 
+
+from UI.CommentObject import Comment
 import UI.baseUI
 import UI.EnterUnitTests
 import UI.UnitTestResults
@@ -554,7 +556,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			action.triggered.connect(call) #...and the subroutine to run when triggered 
 			menu.addAction(action) #and add to menu
 
-		menu.exec_(self.sender().mapToGlobal(point)) #Puts the menu on screen at the right point (mapToGlobal converts the position in the sender object to a global position so that the position at which the menu displays (arg to exec_) is where the user right clicked)			
+		menu.exec_(self.sender().mapToGlobal(point)) #Puts the menu on screen at the right point (mapToGlobal converts the position in the sender object to a global position so that the position at which the menu displays (arg to exec_) is where the user right clicked)
+		
 	
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 	def __init__(self, IDEWindow, parent=None):
