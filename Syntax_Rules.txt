@@ -1,0 +1,11 @@
+#Format: A regex, without flags, followed by ;; and the suggestion text. #To comment
+(.+) *= *\{\} *\n(for +(.+) +in +(.+): *\n[ \t]*\1\[\3\] *= *\4\[\3\]) *\n(for +(.+) +in +(.+): *\n[ \t]*\1\[\3\] *= *\7\[\3\]);;<code>merged_dict = {**dict1, **dict2}</code> to merge two dictionaries?
+(.+) *= *(.+) *\n\2 *= *(.+) *\n\3 *= *\1 *;;<code>a,b = b,a</code> to swap values?
+(.+) *= *\[\]\nfor +(.+) +in +(.+):\n(.*)\n*[ \t]+\1\.append(.*);;a list comprehension?
+for +(.+) +in +(.+):\n[ \t]*for +(.+) +in +(.+):\n;;the zip function to simultaneously iterate over two lists?
+for +(.+) +in +range\(len\((.+)\),-1,-1\): *\n;;[::-1] to reverse a list?
+for +(.+) +in +range\((.+)\): *\n[\t ]+(.+) *\+= "(.+)";;string multiplication <code>a = "h"*5</code>?
+(.+) *= \1 *[\+\/\*-] *(.+);;the shorthand <code>a+=b, c/=d</code> etc.?
+for +(.+) +in +(.+):\n[ \t]+(.+)\(\1\);;the map function to apply a function to all elements of a list?
+if +(.+):\n[\t ]+(.+) *= *(.+)\n[\t ]*else:\n[\t ]+\2 *= *(.+);;the ternary operator<code>a = "the condition is true" if condition else "the condition is false"</code>?
+(.+) *> *(.+) *and *\1 *< *(.+)|(.+) *< *(.+) *and *\4 *> *(.+);;a compound a<b<c to simplify this condition?

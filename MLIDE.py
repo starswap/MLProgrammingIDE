@@ -8,6 +8,7 @@ import os
 import copy
 import math
 import sys
+import re
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
@@ -385,6 +386,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
 		
+		self.comments = []
+		self.unwantedSuggestions = []
 		
 	def createCurrentProjectByOpening(self):
 		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
@@ -432,6 +435,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 
 		if self.activeFileTextbox.textCursor().block().length() == 0:
 			print("newline")
+		
+		self.suggestSyntaxFeatures(self.activeFileTextbox.toPlainText())
 		
 
 	def showUnitTestEntry(self):
@@ -557,8 +562,49 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			menu.addAction(action) #and add to menu
 
 		menu.exec_(self.sender().mapToGlobal(point)) #Puts the menu on screen at the right point (mapToGlobal converts the position in the sender object to a global position so that the position at which the menu displays (arg to exec_) is where the user right clicked)
+
+	def suggestSyntaxFeatures(self,codeToSuggestOn):
+
+		#Delete all existing suggestions and regenerate
+		while len(self.comments) > 0:
+			self.comments[0].die()
+
+		with open("Syntax_Rules.txt","r") as f:
+			for line in f.readlines():
+				line = line.strip()
+				if line[0] == '#':
+					continue
+				pattern = line.split(";;")[0]
+				commentText = line.split(";;")[1]
+				
+				for match in re.finditer(pattern,codeToSuggestOn):
+					charNo = match.span()[0]
+					matchedCode = match.group(0)
+					if matchedCode in self.unwantedSuggestions:
+						continue
+					for i,line in enumerate(codeToSuggestOn.split("\n")):
+						charNo -= (len(line) +1) #aDD 1 BECAUSE OF THE \N WHICH HAS ALREADY GONE
+						if charNo <= 0:
+							lineNo = i+2
+							break				
+					print(charNo)
+					
+					
+					newComm = Comment("On line " + str(lineNo) + ", have you considered using " + commentText ,self.commentsPane,matchedCode)					
+					newComm.ui.dismissButton.clicked.connect(self.unwantedComment)
+					newComm.deleted.connect(lambda : self.comments.remove(self.sender()))
+
+					self.comments.append(newComm)
+			
+	def unwantedComment(self):
+		self.unwantedSuggestions.append(self.sender().comment.matchedCode)
+		self.sender().comment.die()
+					
 		
-	
+		
+		
+
+
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 	def __init__(self, IDEWindow, parent=None):
 		super(LoadScreen, self).__init__(parent)
