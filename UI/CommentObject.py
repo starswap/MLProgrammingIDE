@@ -23,10 +23,15 @@ class Comment(PyQt5.QtWidgets.QWidget):
 		self.matchedCode = matchedCode #store the match for later so that if the user dismisses the comment we don't keep making it come back
 		
 		self.ui.dismissButton.comment = self
+		
+		self.ui.helpButton.clicked.connect(self.help)
 	def die(self):
 		"""Called when the user clicks the Dismiss Suggestion button"""
 		self.deleted.emit()
 		sip.delete(self) #Remove it from memory and call the destructor (which we don't have access to as it's C++)	 https://stackoverflow.com/questions/30241684/pyqt4-setparent-vs-deletelater/30245816#30245816	
+	
+	def help(self):
+		PyQt5.QtWidgets.QToolTip.showText(PyQt5.QtGui.QCursor.pos(),"To add your own syntax hints, edit the Syntax_Rules.txt file. You can also share this file with others	")
 		
 #Create a new Comment: Comment("Consider replacing <code>OldAndBad</code> with <code>NewAndGood</code> for an improvement in efficacy",self.commentsPane)
 		

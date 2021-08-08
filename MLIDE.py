@@ -564,41 +564,49 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		menu.exec_(self.sender().mapToGlobal(point)) #Puts the menu on screen at the right point (mapToGlobal converts the position in the sender object to a global position so that the position at which the menu displays (arg to exec_) is where the user right clicked)
 
 	def suggestSyntaxFeatures(self,codeToSuggestOn):
+		"""Take the regex patterns defined in Syntax_Rules.txt and apply them to the user's code. In case of a match, create a comment reminding the user of what they could do to improve their code."""
 
 		#Delete all existing suggestions and regenerate
-		while len(self.comments) > 0:
+		while len(self.comments) > 0: #We have to do it like this because when they die() they get removed from self.comments so we can't just iterate over as the array length would keep changing
 			self.comments[0].die()
+			
+		with open("Syntax_Rules.txt","r") as f: #Contains the patterns to match and corresponding suggestions to make
 
-		with open("Syntax_Rules.txt","r") as f:
-			for line in f.readlines():
-				line = line.strip()
-				if line[0] == '#':
+			for line in f.readlines(): #Each line is one pattern-suggestion text pair.
+
+				if line[0] == '#': #The pattern is "commented out" so skip it as it shouldn't be applied
 					continue
-				pattern = line.split(";;")[0]
-				commentText = line.split(";;")[1]
+				
+				pattern = line.split(";;")[0] #regex to search for is first half
+				commentText = line.split(";;")[1] #suggestion to show in case of match is second half
 				
 				for match in re.finditer(pattern,codeToSuggestOn):
-					charNo = match.span()[0]
-					matchedCode = match.group(0)
+				
+					charNo = match.span()[0] #Character-level position of the match in the user's code. Will be used to calculate line number
+
+					#If the user has previously rejected a suggestion on exactly the same block of code then don't apply it as they are obviously happy without the change
+					matchedCode = match.group(0)					
 					if matchedCode in self.unwantedSuggestions:
 						continue
-					for i,line in enumerate(codeToSuggestOn.split("\n")):
-						charNo -= (len(line) +1) #aDD 1 BECAUSE OF THE \N WHICH HAS ALREADY GONE
-						if charNo <= 0:
-							lineNo = i+2
-							break				
-					print(charNo)
 					
+					#Compute the line number of the matched text from the returned char number provided by the re module
+					for i,line in enumerate(codeToSuggestOn.split("\n")): #Loop over lines -> i is the line number from 0, line is the content
 					
-					newComm = Comment("On line " + str(lineNo) + ", have you considered using " + commentText ,self.commentsPane,matchedCode)					
-					newComm.ui.dismissButton.clicked.connect(self.unwantedComment)
-					newComm.deleted.connect(lambda : self.comments.remove(self.sender()))
-
-					self.comments.append(newComm)
+						charNo -= (len(line) +1) #Subtract the length of the line (+1 to count the \n which the split() command removed) from the character position so that....
+						if charNo <= 0: #...when it gets to 0 or negative then the match must be on that line
+							lineNo = i+2 #Adjust for the fact that we want the line numbers to start from 1 to match those displayed in the IDE
+							break
+					
+					newComm = Comment("On line " + str(lineNo) + ", have you considered using " + commentText ,self.commentsPane,matchedCode) #Create a new comment with the correct message, referring to the correct part of the user's code
+					newComm.ui.dismissButton.clicked.connect(self.unwantedComment) #Setup the event callback for when the user dismisses the suggestion
+					newComm.deleted.connect(lambda : self.comments.remove(self.sender())) #Setup the event callback for when the comment is deleted to make sure that we remove it from self.comments such that this is always accurate
+					
+					self.comments.append(newComm) #Save a handle on the comment we just made for later e.g. for when we want to delete it
 			
 	def unwantedComment(self):
-		self.unwantedSuggestions.append(self.sender().comment.matchedCode)
-		self.sender().comment.die()
+		"""Triggered when the user presses dismiss suggestion on a comment"""
+		self.unwantedSuggestions.append(self.sender().comment.matchedCode) #Save the code that was matched to create that suggestion so that we don't accidentally create the same suggestion again.
+		self.sender().comment.die() #Delete the comment, causing it to be removed from the screen and from the self.comments array via qt signal-slot events
 					
 		
 		

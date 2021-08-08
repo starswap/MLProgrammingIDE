@@ -1,5 +1,5 @@
 #Format: A regex, without flags, followed by ;; and the suggestion text. #To comment
-(.+) *= *\{\} *\n(for +(.+) +in +(.+): *\n[ \t]*\1\[\3\] *= *\4\[\3\]) *\n(for +(.+) +in +(.+): *\n[ \t]*\1\[\3\] *= *\7\[\3\]);;<code>merged_dict = {**dict1, **dict2}</code> to merge two dictionaries?
+(.+) *= *\{\} *\n(for +(.+) +in +(.+): *\n[ \t]*\1\[\3\] *= *\4\[\3\]) *\n(for +(.+) +in +(.+): *\n[ \t]*\1\[\3\] *= *\7\[\3\]);;<code>mergedDict = {**dict1, **dict2}</code> to merge two dictionaries?
 (.+) *= *(.+) *\n\2 *= *(.+) *\n\3 *= *\1 *;;<code>a,b = b,a</code> to swap values?
 (.+) *= *\[\]\nfor +(.+) +in +(.+):\n(.*)\n*[ \t]+\1\.append(.*);;a list comprehension?
 for +(.+) +in +(.+):\n[ \t]*for +(.+) +in +(.+):\n;;the zip function to simultaneously iterate over two lists?

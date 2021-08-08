@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>882</width>
-    <height>612</height>
+    <width>963</width>
+    <height>663</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1538,8 +1538,8 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>170</width>
-         <height>377</height>
+         <width>187</width>
+         <height>419</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -1556,7 +1556,7 @@ p, li { white-space: pre-wrap; }
          <number>0</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="commentsPane" stretch="">
+         <layout class="QVBoxLayout" name="commentsPane">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -1573,7 +1573,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>882</width>
+     <width>963</width>
      <height>22</height>
     </rect>
    </property>

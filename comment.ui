@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>159</width>
-    <height>243</height>
+    <height>244</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -37,6 +37,9 @@
    </property>
    <item>
     <widget class="QFrame" name="comment">
+     <property name="whatsThis">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="styleSheet">
       <string notr="true">QFrame#comment {border: 1px solid black;}</string>
      </property>
@@ -46,7 +49,7 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
       <item>
        <widget class="QTextEdit" name="commentText">
         <property name="font">
@@ -55,20 +58,42 @@
           <bold>false</bold>
          </font>
         </property>
+        <property name="whatsThis">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Arial'; color:#000000; background-color:transparent;&quot;&gt;To add your own syntax hints, edit the Syntax_Rules.txt file. You can also share this file with others.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="dismissButton">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(233, 185, 110)</string>
-        </property>
-        <property name="text">
-         <string>Dismiss Suggestion</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="dismissButton">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(233, 185, 110)</string>
+          </property>
+          <property name="text">
+           <string>Dismiss Suggestion</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="helpButton">
+          <property name="toolTip">
+           <string>To add your own syntax hints, edit the Syntax_Rules.txt file. You can also share this file with others</string>
+          </property>
+          <property name="text">
+           <string>?</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
