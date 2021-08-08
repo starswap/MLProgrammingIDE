@@ -31,10 +31,7 @@ class UnitTest():
 
 		return stateObj # Will later be converted to a json string
 
-	
-	def executeTests(self):
-		"""Executes all defined tests in the UnitTest object against the code of the function that the user has written to see if the correct outputs are produced"""
-		
+	def executeFunction(self,arguments):
 		#https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 		#https://realpython.com/primer-on-jinja-templating/
 		TEMPLATE = """import importlib.util
@@ -43,40 +40,49 @@ codeToTest = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(codeToTest)
 print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor %}),end="")
 """ #This is the code that will be run to test the user's code. We first import the file containing the user's code and then we run the function with the required arguments. The TEMPLATE variable is in jinja template format as the actual function name, file name and arguments will be filled in at runtime. 
+		filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=arguments) #Fill in the template code so that the function executed is the user's one
+		
+		#Write the filled in template out to a file which we can then run to execute it
+		g = open("unitTestTemp.py","w")
+		g.write(filledInTemplate)
+		g.close()
+
+#Run the file and get the output
+		try:
+			tick = time.time() #start time
+			returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],"unitTestTemp.py"]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
+			tock = time.time() #end time
+			
+			deltaT = "{time:.4f}".format(time=(tock-tick))
+				
+			#Save the output to return later
+			output = returnedVal
+		except subprocess.CalledProcessError: #There was an error in the user's code or the function was not yet defined
+			output = "ERROR"
+			deltaT = "0"
+		
+		#delete the temp file
+		os.remove("unitTestTemp.py")
+		return output,deltaT
+			
+	def executeTests(self):
+		"""Executes all defined tests in the UnitTest object against the code of the function that the user has written to see if the correct outputs are produced"""
 
 		results = [] #list of bools - True if the test was successful and the output matched the expected output, False otherwise
 		outputs = [] #list of string - the returned values from the function the user has written that we are testing
 		times = [] #list of floats - execution times
 		for i,oneTest in enumerate(self.inputValues): #For every test to run
-			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=oneTest) #Fill in the template code so that the function executed is the user's one
-		
-			#Write the filled in template out to a file which we can then run to execute it
-			g = open("unitTestTemp.py","w")
-			g.write(filledInTemplate)
-			g.close()
+			output,time = self.executeFunction(oneTest) #Execute the function on the correct input, and get the function's output and the time taken.
+
+			if output == self.outputValues[i]: #Check if the actual output matches the expected output for this test.
+				result = True
+			else:
+				result = False
 			
-			#Run the file and get the output
-			try:
-				tick = time.time() #start time
-				returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],"unitTestTemp.py"]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
-				tock = time.time() #end time
-				times.append("{time:.4f}".format(time=(tock-tick))) #delta T
-				
-				#Check if the actual output matches the expected output for this test.
-				if returnedVal == self.outputValues[i]:
-					results.append(True)
-				else:
-					results.append(False)
-					
-				#Save the output to return later
-				outputs.append(returnedVal)
-			except subprocess.CalledProcessError: #There was an error in the user's code or the function was not yet defined
-				outputs.append("ERROR")
-				results.append(False)
-				times.append("0")			
-			
-			#delete the temp file
-			os.remove("unitTestTemp.py")
+			#Save the funciton's outputs, the pass/fail test results and the time taken
+			outputs.append(output)
+			results.append(result)
+			times.append(time)
 			
 		return results, outputs, times
 	
@@ -85,8 +91,8 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 		#FUTURE RELEASE: Currently we only support complexity analysis on the first input of a function. 
 		print(self.inputConstraints)
 		if self.types[0] == "Int" or self.types[0] == "Float": 
-			mini = -10000 #Initialise valid minimum and maximum values
-			maxi = 10000
+			mini = -100000000 #Initialise valid minimum and maximum values
+			maxi = 100000000
 			for constraint in self.inputConstraints[0]: #FUTURE RELEASE: Add more constraint types e.g. amount of dp for float
 				if constraint[0] == "Range": #The user has provided a range of acceptable values.
 					mini = constraint[1]

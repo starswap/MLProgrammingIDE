@@ -71,6 +71,11 @@ class Project():
 			print("run command" + self.runCommand)
 			print("projectFiles" + str(self.projectFiles))
 			print("unit Tests" + str(self.unitTests))
+			
+			
+			if len(self.projectFiles) > 0:
+				self.switchToFile(self.associatedWindow.listOfFilesMenu.item(0))
+			
 			return True #Project opening was successful
 			
 	def newProject(self,projectName):

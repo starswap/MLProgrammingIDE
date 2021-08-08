@@ -197,7 +197,7 @@ p, li { white-space: pre-wrap; }
        <number>0</number>
       </property>
       <item>
-       <widget class="Hexagon" name="EfficacyHexagon" native="true">
+       <widget class="EfficacyHexagon" name="EfficacyHexagon" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
@@ -260,7 +260,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="Hexagon" name="EfficiencyHexagon" native="true">
+       <widget class="EfficiencyHexagon" name="EfficiencyHexagon" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -323,7 +323,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="Hexagon" name="EleganceHexagon" native="true">
+       <widget class="EleganceHexagon" name="EleganceHexagon" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -386,7 +386,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="Hexagon" name="ReadabilityHexagon" native="true">
+       <widget class="ReadabilityHexagon" name="ReadabilityHexagon" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -1611,6 +1611,7 @@ p, li { white-space: pre-wrap; }
     </property>
     <addaction name="actionEnter_Unit_Tests"/>
     <addaction name="actionDisplay_Test_Results"/>
+    <addaction name="actionDisplay_Complexity_Analyser_Results"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1752,10 +1753,36 @@ p, li { white-space: pre-wrap; }
     <string>F11</string>
    </property>
   </action>
+  <action name="actionDisplay_Complexity_Analyser_Results">
+   <property name="text">
+    <string>Display Complexity Analyser Results</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Hexagon</class>
+   <class>EfficacyHexagon</class>
+   <extends>QWidget</extends>
+   <header>Objects.HexagonObject</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EfficiencyHexagon</class>
+   <extends>QWidget</extends>
+   <header>Objects.HexagonObject</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EleganceHexagon</class>
+   <extends>QWidget</extends>
+   <header>Objects.HexagonObject</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ReadabilityHexagon</class>
    <extends>QWidget</extends>
    <header>Objects.HexagonObject</header>
    <container>1</container>

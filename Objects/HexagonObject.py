@@ -1,14 +1,19 @@
 import PyQt5
 from to_precision import to_precision
+import random
 
 class Hexagon(PyQt5.QtWidgets.QWidget):
-	def __init__(self,parent):
-		super().__init__(parent)
-		self.show()
-		self.score = 9.8
+	def __init__(self,parent,resourceURLs=[""],startScore=0):
+		"""Constructor - create a new Hexagon object and initialise its parameters"""
+		super().__init__(parent) #Run the superclass constructor to create a QWidget with the required space, which we can then draw on
+		self.show() #Make it visible
+		self.score = startScore #Initialise score
+		self.resourceURLs = resourceURLs #These will be suggested to the user as resources that could help them improve their score on this hexagon
 		self.active = True
 		self.forceInactive = False
-		self.setContextMenuPolicy(PyQt5.QtCore.Qt.CustomContextMenu)
+		self.setContextMenuPolicy(PyQt5.QtCore.Qt.CustomContextMenu) #When you right click you get custom hexagon options, not normal right click options
+		
+
 	def onClick(self):
 		"""Runs when the hexagon gets clicked on"""
 		if self.active == True:
@@ -18,6 +23,7 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 			
 	def deactivate(self,force=False):
 		"""Deactivates the hexagon so its score is no longer calculated and displayed"""
+		self.oldScore = self.score
 		self.active = False #Set it to inactive
 		self.setProperty("hexColor","#979c98") #Set the colour to grey
 		self.repaint() #Update the displayed hexagon on screen.
@@ -31,11 +37,12 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 			else:
 				self.forceInactive = False # It was force inactive but now we unforce that before activating it again so that next time it gets deactivated it doesn't think it's forcing when it isn't
 		self.active = True #Reactivate
+		self.score = self.oldScore
 		self.setProperty("hexColor",self.property("mainColor")) #Bring the colour back
 		self.repaint() #Display the Hexagon again. This also recalculates the score.
 		
 	def getScore(self):
-		return 9.8
+		self.repaint()
 	
 	def mousePressEvent(self,event):
 		"""Overrides QWidget method to allow us to react to mouse button presses"""
@@ -44,11 +51,9 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 			
 	def paintEvent(self, canvas): #Implemented with reference to zetcode.com/gui/pyqt5/painting
 		"""Overrides QWidget paintEvent method to describe how to render the Hexagon object"""
-		
+
 		if self.active == False: #If the object is inactive then we should just show the score as 0
 			self.score = 0 
-		else:
-			self.score = self.getScore() #When it is active we need to get the score
 		
 		#(validation) In case the returned score was negative or greater than 10.
 		if self.score < 0:
@@ -92,13 +97,61 @@ class Hexagon(PyQt5.QtWidgets.QWidget):
 		myPainter.setFont(myFont)
 		
 		#Write the score on the hexagon (the -17 adjusts for the fact the coords are top-left based and we want it central)
-		myPainter.drawText(W/2-17,H/2+LONG_PADDING/2+5,to_precision(self.score, 2, 'std'))
+		rounded = to_precision(self.score, 2, 'std')
+		if rounded[-1] == ".":
+			rounded = rounded[:-1]
+		myPainter.drawText(W/2-17,H/2+LONG_PADDING/2+5,rounded)
 		
 		#Stop painting before we return
 		myPainter.end()
 	
 	def onRightClick(self):
-		pass
+		"""Triggered when the user clicks the 'Access help to improve...' option in the right click menu."""
+		PyQt5.QtGui.QDesktopServices.openUrl(PyQt5.QtCore.QUrl(random.choice(self.resourceURLs))) #Opens a random resource from the ones the hexagon has set as appropriate in the user's default browser
 
+class EfficiencyHexagon(Hexagon):
+	def __init__(self,parent):
+		super().__init__(parent, resourceURLs=["https://www.bigocheatsheet.com/"]) #FUTURE RELEASE: We could have the hexagons generate these resources by themselves using additional learning algorithms
 		
+	def getScore(self):
+		super().getScore()
+		self.score = random.randint(-10,10)
+
+
+class EfficacyHexagon(Hexagon):
+	def __init__(self,parent):
+		super().__init__(parent,resourceURLs=["https://www.dropbox.com/s/cqsxfws52gulkyx/drawing.pdf","https://en.wikipedia.org/wiki/Software_bug","https://www.dummies.com/programming/python/the-8-most-common-python-programming-errors/"])
 		
+	def getScore(self,currentProject):
+		""""Executes the user's unit tests against the current project and uses them to get a score out of 10 for the project's current level of efficacy."""
+		currentProject.save() #Running the unit tests reads the project's data off of the disk so we need to save it in order to run the tests.
+		totalTests = 0 
+		totalSuccesses = 0
+		
+		for ut in currentProject.unitTests: #For each function the user wants us to tests
+			results, outputs, times = ut.executeTests() #Run all testsa against it and get the results
+			for result in results: #For each result (either True for pass or False for fail)
+				totalSuccesses = (totalSuccesses + 1) if result else totalSuccesses #Either this was a success so chalk it up or ignore it
+				totalTests += 1
+			
+		if len(currentProject.unitTests) == 0: #Avoid division by 0 error and just say that the score is 0 if there are no unit tests
+			self.score = 0
+		else:
+			self.score = 10*totalSuccesses/totalTests #The score is like a percentage but out of 10 of correct scores.
+		super().getScore() #Call the superclass method we are extending so the calculated score is displayed (the superclass method contains the code common to all Hexagons which display in the same way)
+		
+class ReadabilityHexagon(Hexagon):
+	def __init__(self,parent):
+		super().__init__(parent,resourceURLs=["https://code.tutsplus.com/tutorials/top-15-best-practices-for-writing-super-readable-code--net-8118","https://dzone.com/articles/10-tips-how-to-improve-the-readability-of-your-sof","https://stackoverflow.com/questions/550861/improving-code-readability"])
+		
+	def getScore(self):
+		super().getScore()
+		
+class EleganceHexagon(Hexagon):
+	def __init__(self,parent):
+		super().__init__(parent,["https://levelup.gitconnected.com/write-elegant-python-code-with-these-10-tricks-43ae7b1aa481","EleganceTips.html","https://dev.solita.fi/2016/06/02/what-is-elegant-code.html"])
+		
+	def getScore(self):
+		super().getScore()
+
+

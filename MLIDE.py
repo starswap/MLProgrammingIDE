@@ -9,9 +9,13 @@ import copy
 import math
 import sys
 import re
+import random
+import time
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
+from multiprocessing import Process
+
 
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
@@ -24,6 +28,7 @@ import UI.UnitTestResults
 import UI.SettingsPopup
 import UI.LoadScreen
 import UI.findReplace
+import UI.ComplexityResultsUI
 
 import CodeFeatures
 
@@ -290,8 +295,39 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 				newFunctionTable.setItem(testNo,func.numberOfInputs+3,PyQt5.QtWidgets.QTableWidgetItem(times[testNo])) #Add the cell to the table so it is displayed
 				
 		super().show() #Actually show the dialogue we've built by calling the superclass method.
-			
-	
+
+
+class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
+	"""A popup window which displays determined complexity for the functions in the user's code."""
+	computed = PyQt5.QtCore.pyqtSignal()
+	def __init__(self,MainIDE):
+		"""Constructor for the popup, which creates the graphics, initialises some variables, and sets up slots and shortcuts."""
+		super().__init__() #Call Qt QDialog constructor to get a dialogue box
+		self.MainIDE = MainIDE # We store the MainIDE window associated with this popup so that later we can reference the currentProject
+		
+		self.ui = UI.ComplexityResultsUI.Ui_Dialog() #Load in the UI I have designed
+		#Set up UI and button onclicks
+		self.ui.setupUi(self)
+
+		#Set up the ctrlW shortcut for easy closing		
+		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
+		ctrlW.activated.connect(self.close)
+		
+					
+	def show(self):
+		"""Computes, renders and shows the results of analysing the complexity of the user's subroutines, in a new popup window."""
+		
+		outputText = "<p>Complexity of: <ul>" #This variable contains the text that will be shown in the main textbox of the popup
+		for ut in self.MainIDE.currentProject.unitTests: #Code complexity estimation is performed on a UnitTest object
+		         result = self.MainIDE.EstimateCodeComplexity(ut) #The complexity estimation
+		         outputText += "<li>&nbsp;"+ut.functionName+"():&nbsp;&nbsp;&nbsp;&nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
+
+		outputText += "</ul></p>" #close remaining tags to get correctly formed HTML before showing on screen
+		self.ui.resultsTextBox.setHtml(outputText)
+		self.computed.emit()
+		super().show()
+
+
 
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
@@ -368,6 +404,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	
 		#Prepare popups
 		self.enterUnitTests = UnitTestPopup(self)
+		self.complexityAnalysisPopup = ComplexityAnalysisPopup(self)
 		self.settings = Settings()
 	
 		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
@@ -448,7 +485,20 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def showTestResults(self):
 		self.utr = UnitTestResultsPopup(self)
 		self.utr.show()
-	
+		
+	def displayComplexityResults(self):
+		loadingDialogue = PyQt5.QtWidgets.QMessageBox(self)
+		loadingDialogue.setIcon(PyQt5.QtWidgets.QMessageBox.Information)
+		loadingDialogue.setText("Apologies for the delay...")
+		loadingDialogue.setWindowTitle("Complexity Analyser Loading...")
+		loadingDialogue.show()
+		self.thread = PyQt5.QtCore.QThread()
+		self.complexityAnalysisPopup.moveToThread(self.thread)
+		self.thread.started.connect(self.complexityAnalysisPopup.show)
+		self.complexityAnalysisPopup.computed.connect(self.thread.quit)
+		self.complexityAnalysisPopup.computed.connect(loadingDialogue.deleteLater)
+		self.complexityAnalysisPopup.show()
+
 	def eventFilter(self, obj, event):
 		"""Implemented using https://stackoverflow.com/questions/57698744/how-can-i-know-when-the-enter-key-was-pressed-on-qtextedit
 		In Qt an event filter is an object which is allowed to receive events on behalf of another object before that object gets to see them. We set this class to be a filter for the active file textbox so that it can inspect keys pressed therein. We check for return/enter presses which require the calling of the OnNewline subroutine from the CodeFeatures file. 
@@ -514,6 +564,21 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.actionFormat_Code.triggered.connect(lambda : self.activeFileTextbox.setPlainText(CodeFeatures.formatCode(self.activeFileTextbox.toPlainText())) )
 		
+		
+		SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
+		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
+		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)
+		self.scoreComputeTimer.timeout.connect(lambda : self.EfficacyHexagon.getScore(self.currentProject))
+		self.scoreComputeTimer.timeout.connect(self.EleganceHexagon.getScore)
+		self.scoreComputeTimer.timeout.connect(self.ReadabilityHexagon.getScore)
+		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
+		self.EfficiencyHexagon.getScore()
+		self.EfficacyHexagon.getScore(self.currentProject)
+		self.EleganceHexagon.getScore()
+		self.ReadabilityHexagon.getScore()
+		
+		self.actionDisplay_Complexity_Analyser_Results.triggered.connect(self.displayComplexityResults)
+		
 	def onMoveCursor(self):
 		pass #breaks undo/redo
 		"""		#Highlight the current line
@@ -549,7 +614,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			actions = [("Access help to improve efficacy",self.EfficacyHexagon.onRightClick)]									
 		elif sender == self.activeFileTextbox: #right clicked inside the active file textbox
 			actions.append(("Paste",self.activeFileTextbox.paste))
-			actions.append(("Display complexity analyser results",DisplayComplexityAnalyserResults))
+			actions.append(("Display complexity analyser results",self.actionDisplay_Complexity_Analyser_Results.trigger))
 			actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))			
 			if self.activeFileTextbox.textCursor().hasSelection(): #We can only do these actions if something is highlighted
 				actions.append(("Copy",self.activeFileTextbox.copy))
@@ -607,10 +672,75 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		"""Triggered when the user presses dismiss suggestion on a comment"""
 		self.unwantedSuggestions.append(self.sender().comment.matchedCode) #Save the code that was matched to create that suggestion so that we don't accidentally create the same suggestion again.
 		self.sender().comment.die() #Delete the comment, causing it to be removed from the screen and from the self.comments array via qt signal-slot events
-					
+
+	def EstimateCodeComplexity(self,unitTest):
+		"""Estimates the complexity of the function attached to the unitTest provided"""
+		STEPS = 5 #MAINTENANCE: This is the number of different inputs for which the user's function will be tested before we try to get a result
+		ATTEMPTS = 10 #MAINTENANCE: This is the number of times we will run the tests, averaging over each time.
+
+		#MAINTENANCE: These are the functions whose values are used to determine the complexity of the code based on the time taken - which is it proportional to? You can add more complexities as long as the position in the COMPLEXITY_FUNCTIONS list of the function matches the position in the FUNCTION_STRINGS list of the name.
+		COMPLEXITY_FUNCTIONS = [lambda a : 1,lambda a : math.log(a), lambda a: a, lambda a: a*math.log(a),lambda a : a**2] 
+		FUNCTION_STRINGS = ["1","logn","n","nlogn","n^2","2^n"]
+		
+		start = random.randint(1,10) #Initialise valid minimum and maximum values
+		end = random.randint(400000,410000)
+		for constraint in unitTest.inputConstraints[0]:
+			if constraint[0] == "Range" or constraint[0] == "Length": #Check if the user has specified a constraint on the length of a string or the range of an integer. In that case we should only try values in that range/strings of that length range. 
+				start = constraint[1]
+				end = constraint[2]		
+		
+		difference = end-start #total input space we have to make measurements
+		inpStep = difference // STEPS #We take several time measurements with different n values (as in O(n))
+		ns = [] #n values as in O(n^2 etc)
+		times = []  #times it takes with corresponding n values
+
+		#For each measurement we need to make, time run the subroutine and time its execution
+		for i in range(start+inpStep,end,inpStep): #Try to avoid starting with a really low value as this can be highly influenced by anomalous factors like caching etc.
+			ns.append(i) #Save the n value so we can later use this to compute the complexity
+		
+			try:
+				mockInput = unitTest.generateMockInput(i) #This input will be fed to the function and its execution on this input timed
+				totalTime = 0 #Stores the total time taken over all ATTEMPTS 
+				for att in range(ATTEMPTS):
+					output, time = unitTest.executeFunction([str(mockInput)]) #FUTURE RELEASE: Currently only 1-argument functions support complexity estimation
+					if output == "ERROR":
+						return "ERROR IN CODE" #When the code errors there is no way to know about the complexity
+					totalTime += float(time)
+				times.append(totalTime/ATTEMPTS) #Save average time at this level of input
+				
+			except Exception as e: #For some reason mock input could not be generated so an exception was thrown by the mock input generation function. We can present this to the user as it contains more details
+				return str(e)
+		
+		print(times)	
+		print(ns)
+		minimumCost = float('inf') #the cost of the best fitting complexity routine to the user's code (the lower the cost value the closer the complexity function matches the user's code times)
+		bestFunction = "" #The name of the complexity function which best fits the subroutine
+		
+		for funcName, function in zip(FUNCTION_STRINGS,COMPLEXITY_FUNCTIONS):
+			cf_applied = list(map(function,ns)) #Apply the complexity function to all of the n values we used.
+			divided = [times[i]/cf_applied[i] for i in range(len(times)) ] #The time taken to run the function should be proportional to f(n) where f() is the correct complexity function, meaning t = kf(n) so k = t/f(n). Therefore the correct complexity function will have the most similar values in this divided array
+			print(cf_applied)
+			print(funcName)
+			print(divided)
+			
+			#we now need to find the function which has the most constant value in the divided array. Sort the results from low to high, then taking the total of the differences between successive results.               
+			results = sorted(divided)
+			costOfThisFunction = 0
+			for i in range(1,len(results)):
+				costOfThisFunction += (results[i] - results[i-1])
+			costOfThisFunction /= results[-1]
+			
+			print(costOfThisFunction)
+			#As we process through all functions which could be the complexity of this one, we need to keep track of the most realistic choice.
+			if costOfThisFunction < minimumCost:
+				minimumCost = costOfThisFunction
+				bestFunction = funcName
 		
 		
-		
+			print("")
+		return bestFunction
+
+
 
 
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
