@@ -14,8 +14,6 @@ import time
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
-from multiprocessing import Process
-
 
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
@@ -29,6 +27,7 @@ import UI.SettingsPopup
 import UI.LoadScreen
 import UI.findReplace
 import UI.ComplexityResultsUI
+import UI.ComplexityLoading
 
 import CodeFeatures
 
@@ -296,6 +295,16 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 				
 		super().show() #Actually show the dialogue we've built by calling the superclass method.
 
+class ComplexityLoading(PyQt5.QtWidgets.QDialog):
+	"""A popup window which displays when the main complexity analysis window is loading"""
+	def __init__(self):
+		"""Constructor for the popup, which creates the graphics, initialises some variables, and sets up slots and shortcuts."""
+		super().__init__() #Call Qt QDialog constructor to get a dialogue box
+		self.ui = UI.ComplexityLoading.Ui_Dialog() #Load in the UI I have designed
+		#Set up UI and button onclicks
+		self.ui.setupUi(self)
+		self.show()
+
 
 class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
 	"""A popup window which displays determined complexity for the functions in the user's code."""
@@ -316,7 +325,9 @@ class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
 					
 	def show(self):
 		"""Computes, renders and shows the results of analysing the complexity of the user's subroutines, in a new popup window."""
-		
+		loadingDialogue = ComplexityLoading()
+		self.computed.connect(loadingDialogue.deleteLater)
+
 		outputText = "<p>Complexity of: <ul>" #This variable contains the text that will be shown in the main textbox of the popup
 		for ut in self.MainIDE.currentProject.unitTests: #Code complexity estimation is performed on a UnitTest object
 		         result = self.MainIDE.EstimateCodeComplexity(ut) #The complexity estimation
@@ -487,16 +498,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.utr.show()
 		
 	def displayComplexityResults(self):
-		loadingDialogue = PyQt5.QtWidgets.QMessageBox(self)
-		loadingDialogue.setIcon(PyQt5.QtWidgets.QMessageBox.Information)
-		loadingDialogue.setText("Apologies for the delay...")
-		loadingDialogue.setWindowTitle("Complexity Analyser Loading...")
-		loadingDialogue.show()
-		self.thread = PyQt5.QtCore.QThread()
-		self.complexityAnalysisPopup.moveToThread(self.thread)
-		self.thread.started.connect(self.complexityAnalysisPopup.show)
-		self.complexityAnalysisPopup.computed.connect(self.thread.quit)
-		self.complexityAnalysisPopup.computed.connect(loadingDialogue.deleteLater)
 		self.complexityAnalysisPopup.show()
 
 	def eventFilter(self, obj, event):

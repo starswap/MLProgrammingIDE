@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets#Import graphics library
+from PyQt5 import QtCore, QtGui, QtWidgets #Import graphics library
 
 class Ui_MainWindow(object):
     """The main window class is used by the Qt graphics library to create the main window of the program"""

@@ -1,3 +1,4 @@
 pip3 install PyQt5
 pip3 install git+https://bitbucket.org/william_rusnack/to-precision.git
 pip3 install jinja2
+sudo apt-get install pyqt5-dev-tools
