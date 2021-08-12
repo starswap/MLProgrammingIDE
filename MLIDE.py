@@ -711,18 +711,13 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 				
 			except Exception as e: #For some reason mock input could not be generated so an exception was thrown by the mock input generation function. We can present this to the user as it contains more details
 				return str(e)
-		
-		print(times)	
-		print(ns)
+
 		minimumCost = float('inf') #the cost of the best fitting complexity routine to the user's code (the lower the cost value the closer the complexity function matches the user's code times)
 		bestFunction = "" #The name of the complexity function which best fits the subroutine
 		
 		for funcName, function in zip(FUNCTION_STRINGS,COMPLEXITY_FUNCTIONS):
 			cf_applied = list(map(function,ns)) #Apply the complexity function to all of the n values we used.
 			divided = [times[i]/cf_applied[i] for i in range(len(times)) ] #The time taken to run the function should be proportional to f(n) where f() is the correct complexity function, meaning t = kf(n) so k = t/f(n). Therefore the correct complexity function will have the most similar values in this divided array
-			print(cf_applied)
-			print(funcName)
-			print(divided)
 			
 			#we now need to find the function which has the most constant value in the divided array. Sort the results from low to high, then taking the total of the differences between successive results.               
 			results = sorted(divided)
@@ -731,14 +726,12 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 				costOfThisFunction += (results[i] - results[i-1])
 			costOfThisFunction /= results[-1]
 			
-			print(costOfThisFunction)
 			#As we process through all functions which could be the complexity of this one, we need to keep track of the most realistic choice.
 			if costOfThisFunction < minimumCost:
 				minimumCost = costOfThisFunction
 				bestFunction = funcName
 		
-		
-			print("")
+
 		return bestFunction
 
 
