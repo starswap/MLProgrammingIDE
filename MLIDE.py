@@ -1,5 +1,4 @@
-#It appears that the conversion to python may be redundant. We might be able to just use importUI or something
-#Could move much of this to UI file
+#Could move much of this to separate files
 
 import PyQt5
 import sys
@@ -11,6 +10,7 @@ import sys
 import re
 import random
 import time
+import datetime
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
@@ -30,9 +30,6 @@ import UI.ComplexityResultsUI
 import UI.ComplexityLoading
 
 import CodeFeatures
-
-
-
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestPopup(PyQt5.QtWidgets.QDialog):
@@ -295,15 +292,15 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 				
 		super().show() #Actually show the dialogue we've built by calling the superclass method.
 
-class ComplexityLoading(PyQt5.QtWidgets.QDialog):
-	"""A popup window which displays when the main complexity analysis window is loading"""
-	def __init__(self):
-		"""Constructor for the popup, which creates the graphics, initialises some variables, and sets up slots and shortcuts."""
-		super().__init__() #Call Qt QDialog constructor to get a dialogue box
-		self.ui = UI.ComplexityLoading.Ui_Dialog() #Load in the UI I have designed
-		#Set up UI and button onclicks
-		self.ui.setupUi(self)
-		self.show()
+##class ComplexityLoading(PyQt5.QtWidgets.QDialog):
+##	"""A popup window which displays when the main complexity analysis window is loading"""
+##	def __init__(self):
+##		"""Constructor for the popup, which creates the graphics, initialises some variables, and sets up slots and shortcuts."""
+##		super().__init__() #Call Qt QDialog constructor to get a dialogue box
+##		self.ui = UI.ComplexityLoading.Ui_Dialog() #Load in the UI I have designed
+##		#Set up UI and button onclicks
+##		self.ui.setupUi(self)
+##		self.show()
 
 
 class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
@@ -321,22 +318,12 @@ class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
 		#Set up the ctrlW shortcut for easy closing		
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
 		ctrlW.activated.connect(self.close)
+
+	def disp(self,text):
+		print("aa")
+		self.ui.resultsTextBox.setHtml(text)
+
 		
-					
-	def show(self):
-		"""Computes, renders and shows the results of analysing the complexity of the user's subroutines, in a new popup window."""
-		loadingDialogue = ComplexityLoading()
-		self.computed.connect(loadingDialogue.deleteLater)
-
-		outputText = "<p>Complexity of: <ul>" #This variable contains the text that will be shown in the main textbox of the popup
-		for ut in self.MainIDE.currentProject.unitTests: #Code complexity estimation is performed on a UnitTest object
-		         result = self.MainIDE.EstimateCodeComplexity(ut) #The complexity estimation
-		         outputText += "<li>&nbsp;"+ut.functionName+"():&nbsp;&nbsp;&nbsp;&nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
-
-		outputText += "</ul></p>" #close remaining tags to get correctly formed HTML before showing on screen
-		self.ui.resultsTextBox.setHtml(outputText)
-		self.computed.emit()
-		super().show()
 
 
 
@@ -417,15 +404,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.enterUnitTests = UnitTestPopup(self)
 		self.complexityAnalysisPopup = ComplexityAnalysisPopup(self)
 		self.settings = Settings()
-	
-		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
-		self.actionDisplay_Test_Results.triggered.connect(self.showTestResults)
-		self.actionOpen_Settings.triggered.connect(self.showSettings)
-		self.actionOpen_Project.triggered.connect(self.createCurrentProjectByOpening)
-		self.actionNew_Project.triggered.connect(self.createCurrentProjectByNew)
-		self.actionClose_IDE.triggered.connect(self.close)
-		self.activeFileTextbox.textChanged.connect(self.onChangeText)
-		self.runCommandBox.textChanged.connect(self.onChangeText)
 										
 		self.highlighter = CodeFeatures.PythonSyntaxHighlighter(self.activeFileTextbox)
 		self.justDeactivated = False
@@ -433,14 +411,24 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.shellInputBox.setPlaceholderText("Type input to the program here and press send. Works when program running.")
 		
 		self.findReplaceDialogue = UI.findReplace.findReplace(self)
+
+		self.actionOpen_Settings.triggered.connect(self.showSettings)
+		self.actionOpen_Project.triggered.connect(self.createCurrentProjectByOpening)
+		self.actionNew_Project.triggered.connect(self.createCurrentProjectByNew)
+		self.actionClose_IDE.triggered.connect(self.close)
 		
 		self.comments = []
 		self.unwantedSuggestions = []
 		
 	def createCurrentProjectByOpening(self):
-		self.currentProject = Project(PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0],True,self)
-		self.setUpActions()
-		
+                mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
+                try:
+                        self.currentProject = Project(mlideproj,True,self)
+                        self.setUpActions()
+                except FileNotFoundError:
+                        print("File issue")
+                        pass
+                
 	def createCurrentProjectByNew(self):
 		result = PyQt5.QtWidgets.QInputDialog.getText(self, "New Project","Please enter the name of the new project:")
 		if result[1] == True:
@@ -565,21 +553,33 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.actionFormat_Code.triggered.connect(lambda : self.activeFileTextbox.setPlainText(CodeFeatures.formatCode(self.activeFileTextbox.toPlainText())) )
 		
-		
-		SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
-		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
-		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)
-		self.scoreComputeTimer.timeout.connect(lambda : self.EfficacyHexagon.getScore(self.currentProject))
-		self.scoreComputeTimer.timeout.connect(self.EleganceHexagon.getScore)
-		self.scoreComputeTimer.timeout.connect(self.ReadabilityHexagon.getScore)
-		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
+		#Get initial score values
 		self.EfficiencyHexagon.getScore()
 		self.EfficacyHexagon.getScore(self.currentProject)
 		self.EleganceHexagon.getScore()
 		self.ReadabilityHexagon.getScore()
 		
 		self.actionDisplay_Complexity_Analyser_Results.triggered.connect(self.displayComplexityResults)
-		
+
+		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
+		self.actionDisplay_Test_Results.triggered.connect(self.showTestResults)
+		self.activeFileTextbox.textChanged.connect(self.onChangeText)
+		self.runCommandBox.textChanged.connect(self.onChangeText)		
+
+                #Source: https://realpython.com/python-pyqt-qthread/
+                #Prepare the thread to run the ML components.
+		self.thread = PyQt5.QtCore.QThread()
+		self.updateScores = UpdateScoresAndComplexity(self)
+		self.updateScores.moveToThread(self.thread)
+		self.thread.started.connect(self.updateScores.update)
+		self.updateScores.complexityDone.connect(self.complexityAnalysisPopup.disp)
+		self.updateScores.finished.connect(self.thread.quit)
+		self.updateScores.finished.connect(self.updateScores.deleteLater)
+		self.thread.finished.connect(self.thread.deleteLater)
+		self.thread.start()
+        
+
+
 	def onMoveCursor(self):
 		pass #breaks undo/redo
 		"""		#Highlight the current line
@@ -674,6 +674,68 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.unwantedSuggestions.append(self.sender().comment.matchedCode) #Save the code that was matched to create that suggestion so that we don't accidentally create the same suggestion again.
 		self.sender().comment.die() #Delete the comment, causing it to be removed from the screen and from the self.comments array via qt signal-slot events
 
+
+
+
+
+class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
+	def __init__(self, IDEWindow, parent=None):
+		super(LoadScreen, self).__init__(parent)
+		self.setupUi(self)
+		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
+		self.setWindowIcon(icon)	
+		self.setFixedSize(self.size())
+		self.IDEWindow = IDEWindow
+		
+		
+		self.setStyleSheet("""
+		QWidget {
+			font-family:calibri,Ubuntu,sans-serif;
+			font-size: 11pt;
+		}""")
+		
+		self.newProjectButton.clicked.connect(self.new)
+		self.openProjectButton.clicked.connect(self.open)
+
+		shortcut = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+O"),self)
+		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+N"),self)
+		shortcut.activated.connect(self.openProjectButton.click)
+		shortcut2.activated.connect(self.newProjectButton.click)
+		
+		
+		#Set up the ctrlW shortcut for easy closing		
+		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
+		ctrlW.activated.connect(self.close)
+				
+		#Add ctrl L for learn?
+	def open(self):
+		self.hide()
+		self.IDEWindow.show()
+		self.IDEWindow.actionOpen_Project.trigger()
+	
+	def new(self):
+		self.hide()
+		self.IDEWindow.show()
+		self.IDEWindow.actionNew_Project.trigger()
+def DisplayComplexityAnalyserResults():
+	pass
+	
+def ApplyCommentGeneration():
+	pass
+def setClipboardText(text):
+	global app
+	app.clipboard().setText(text)
+
+#Source: https://realpython.com/python-pyqt-qthread/
+class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
+	finished = PyQt5.QtCore.pyqtSignal()
+	complexityDone = PyQt5.QtCore.pyqtSignal(str)
+
+
+	def __init__(self,mainWindow):
+		self.mainWindow = mainWindow
+		super().__init__()
+
 	def EstimateCodeComplexity(self,unitTest):
 		"""Estimates the complexity of the function attached to the unitTest provided"""
 		STEPS = 5 #MAINTENANCE: This is the number of different inputs for which the user's function will be tested before we try to get a result
@@ -732,58 +794,35 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 				bestFunction = funcName
 		
 
-		return bestFunction
+		return bestFunction		
+					
+	def prepareComplexity(self):
+		"""Computes, renders and shows the results of analysing the complexity of the user's subroutines, in a new popup window."""
+		outputText = "<p>Complexity of ≈ <ul>" #This variable contains the text that will be shown in the main textbox of the popup
+		uts = self.mainWindow.currentProject.unitTests
+		for ut in uts: #Code complexity estimation is performed on a UnitTest object
+		         result = self.EstimateCodeComplexity(ut) #The complexity estimation
+		         outputText += "<li>&nbsp;"+ut.functionName+"():&nbsp;&nbsp;&nbsp;&nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
+
+		outputText += "</ul><br>Last computed at "+ str(datetime.now().strftime("%H:%M:%S")) +"<br />Disclaimer - complexity estimated by empirical observation and so may be inaccurate.</p>" #close remaining tags to get correctly formed HTML before showing on screen #https://www.programiz.com/python-programming/datetime/current-time
+		self.complexityDone.emit(outputText)
+		print("KoP")
+
+	def update(self):
+		"""Updates scores and complexity analysis estimates. This runs in a separate thread so as to prevent it from freezing the GUI"""
+
+		self.prepareComplexity()
+##                SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
+##		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
+##		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)
+##		self.scoreComputeTimer.timeout.connect(lambda : self.EfficacyHexagon.getScore(self.currentProject))
+##		self.scoreComputeTimer.timeout.connect(self.EleganceHexagon.getScore)
+##		self.scoreComputeTimer.timeout.connect(self.ReadabilityHexagon.getScore)
+##		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
+##		
+		self.finished.emit()
 
 
-
-
-class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
-	def __init__(self, IDEWindow, parent=None):
-		super(LoadScreen, self).__init__(parent)
-		self.setupUi(self)
-		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
-		self.setWindowIcon(icon)	
-		self.setFixedSize(self.size())
-		self.IDEWindow = IDEWindow
-		
-		
-		self.setStyleSheet("""
-		QWidget {
-			font-family:calibri,Ubuntu,sans-serif;
-			font-size: 11pt;
-		}""")
-		
-		self.newProjectButton.clicked.connect(self.new)
-		self.openProjectButton.clicked.connect(self.open)
-
-		shortcut = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+O"),self)
-		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+N"),self)
-		shortcut.activated.connect(self.openProjectButton.click)
-		shortcut2.activated.connect(self.newProjectButton.click)
-		
-		
-		#Set up the ctrlW shortcut for easy closing		
-		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
-		ctrlW.activated.connect(self.close)
-				
-		#Add ctrl L for learn?
-	def open(self):
-		self.hide()
-		self.IDEWindow.show()
-		self.IDEWindow.actionOpen_Project.trigger()
-	
-	def new(self):
-		self.hide()
-		self.IDEWindow.show()
-		self.IDEWindow.actionNew_Project.trigger()
-def DisplayComplexityAnalyserResults():
-	pass
-	
-def ApplyCommentGeneration():
-	pass
-def setClipboardText(text):
-	global app
-	app.clipboard().setText(text)
 
 app = PyQt5.QtWidgets.QApplication(sys.argv)
 IDE_Window = MLIDE()

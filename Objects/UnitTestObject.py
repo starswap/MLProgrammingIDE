@@ -4,6 +4,7 @@ import subprocess
 import os
 import time
 import random
+import tempfile
 class UnitTest():
 	"""An object representing a set of Unit Tests that can be run against one individual function in the user's code. (i.e. one UnitTest object to one function), including a set of input values, types, and constraints, and a set of output values, as well as the methods required to run these against the function when the user has written it."""
 	def __init__(self,funcName,inputList,outputList,types,inpConstraints,funcFileName,window):
@@ -43,26 +44,29 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 		filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=arguments) #Fill in the template code so that the function executed is the user's one
 		
 		#Write the filled in template out to a file which we can then run to execute it
-		g = open("unitTestTemp.py","w")
-		g.write(filledInTemplate)
-		g.close()
-
-#Run the file and get the output
+                #Template code source: https://stackoverflow.com/questions/8577137/how-can-i-create-a-tmp-file-in-python
+		fd, path = tempfile.mkstemp()
 		try:
-			tick = time.time() #start time
-			returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],"unitTestTemp.py"]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
-			tock = time.time() #end time
-			
-			deltaT = "{time:.4f}".format(time=(tock-tick))
+			with os.fdopen(fd, 'w') as g:
+				g.write(filledInTemplate)
+
+			#Run the file and get the output
+			try:
+				tick = time.time() #start time
+				returnedVal = subprocess.check_output([self.associatedWindow.settings.settings["pythonCommand"],path]).decode("UTF-8") #https://stackoverflow.com/questions/18739239/python-how-to-get-stdout-after-running-os-system
+				tock = time.time() #end time
 				
-			#Save the output to return later
-			output = returnedVal
-		except subprocess.CalledProcessError: #There was an error in the user's code or the function was not yet defined
-			output = "ERROR"
-			deltaT = "0"
-		
-		#delete the temp file
-		os.remove("unitTestTemp.py")
+				deltaT = "{time:.4f}".format(time=(tock-tick))
+					
+				#Save the output to return later
+				output = returnedVal
+			except subprocess.CalledProcessError: #There was an error in the user's code or the function was not yet defined
+				output = "ERROR"
+				deltaT = "0"
+
+		finally:
+			os.remove(path)
+
 		return output,deltaT
 			
 	def executeTests(self):

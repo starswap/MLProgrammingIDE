@@ -18,16 +18,16 @@ class Project():
 		self.activeFileIndex = 0		
 		self.fileContents = [] #Will contain the contents of all of the files in the project
 		if exists: #If the project already exists we came via an open dialogue and so we need to use the Project.open() method to populate attributes 
-			self.open(projectNameOrFilePath) 
+			if self.open(projectNameOrFilePath) == False:
+                                raise FileNotFoundError
 		else: #If the project does not exist, we came via a new dialogue and so we need to use newProject to populate
 			self.newProject(projectNameOrFilePath)
-
 
 		
 	def open(self,projectFilePath):
 		"""Populates the attributes of the Project object by opening an existing project"""
 		_, extension = os.path.splitext(projectFilePath) #Splits the file path into the base path and the extension so we can check the extension is correct
-		
+		print("ext" + extension)
 		if extension != ".mlideproj": #Wrong file extension
 			#Make a dialogue box to tell the user that they need to select the correct file type
 			dialogue = PyQt5.QtWidgets.QMessageBox(self.associatedWindow)
@@ -37,46 +37,47 @@ class Project():
 			dialogue.show()
 			return False 
 		else:
-			self.fileName = os.path.basename(projectFilePath) #Save the name of the project file 
+                        print("HHHHHH")
+                        self.fileName = os.path.basename(projectFilePath) #Save the name of the project file 
 
 			#read in the contents of the project file to unpack the attributes of the project
-			f = open(projectFilePath,"r") 
-			projectFileContents = json.loads(f.read())
-			f.close()
-			
-			#Get the name, directory path and run command as stored on disk
-			self.name = projectFileContents["name"]
-			self.directoryPath = projectFileContents["directoryPath"]
-			self.runCommand = projectFileContents["runCommand"]
+                        f = open(projectFilePath,"r") 
+                        projectFileContents = json.loads(f.read())
+                        f.close()
 
+                        #Get the name, directory path and run command as stored on disk
+                        self.name = projectFileContents["name"]
+                        self.directoryPath = projectFileContents["directoryPath"]
+                        self.runCommand = projectFileContents["runCommand"]
+
+
+                        self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name)
+                        self.associatedWindow.runCommandBox.setText(self.runCommand)
 			
-			self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name)
-			self.associatedWindow.runCommandBox.setText(self.runCommand)
+                        #Open all files in the project
+                        self.projectFiles = [] 
+                        for filename in projectFileContents["projectFiles"]:				
+                                self.projectFiles.append(filename) 
+                                self.openFile(filename)
+                        print("  ")
+                        #Get all of the data about unit tests in the project, iterate over each one of these and create a unit test object with the provided data. Add this to the project
+                        self.unitTests = []
+                        try:
+                                for test in projectFileContents["unitTests"]:
+                                        self.unitTests.append(UnitTestObject.UnitTest(test["functionName"],test["inputValues"],test["outputValues"],test["types"],test["inputConstraints"],test["functionFileName"],self.associatedWindow))
+                        except KeyError:
+                                pass		
+                        print("name:" + self.name)
+                        print("directoryPath" + self.directoryPath)
+                        print("run command" + self.runCommand)
+                        print("projectFiles" + str(self.projectFiles))
+                        print("unit Tests" + str(self.unitTests))
+
+
+                        if len(self.projectFiles) > 0:
+                                self.switchToFile(self.associatedWindow.listOfFilesMenu.item(0))
 			
-			#Open all files in the project
-			self.projectFiles = [] 
-			for filename in projectFileContents["projectFiles"]:				
-				self.projectFiles.append(filename) 
-				self.openFile(filename)
-			
-			#Get all of the data about unit tests in the project, iterate over each one of these and create a unit test object with the provided data. Add this to the project
-			self.unitTests = []
-			try:
-				for test in projectFileContents["unitTests"]:
-					self.unitTests.append(UnitTestObject.UnitTest(test["functionName"],test["inputValues"],test["outputValues"],test["types"],test["inputConstraints"],test["functionFileName"],self.associatedWindow))
-			except KeyError:
-				pass		
-			print("name:" + self.name)
-			print("directoryPath" + self.directoryPath)
-			print("run command" + self.runCommand)
-			print("projectFiles" + str(self.projectFiles))
-			print("unit Tests" + str(self.unitTests))
-			
-			
-			if len(self.projectFiles) > 0:
-				self.switchToFile(self.associatedWindow.listOfFilesMenu.item(0))
-			
-			return True #Project opening was successful
+                        return True #Project opening was successful
 			
 	def newProject(self,projectName):
 		"""Populates the attributes of the project by creating a new one"""
@@ -225,6 +226,7 @@ class Project():
 		
 		#Create the subprocess and run the command
 		self.activeProcess = PyQt5.QtCore.QProcess()
+		print(shlex.split(self.runCommand))
 		self.activeProcess.start(shlex.split(self.runCommand)[0],shlex.split(self.runCommand)[1:]) #https://stackoverflow.com/questions/79968/split-a-string-by-spaces-preserving-quoted-substrings-in-python. We need to preserve the quoted substrings which represent file paths.
 		
 		#Set up Qt Signals (essentially events)
@@ -264,7 +266,9 @@ class Project():
 		self.activeProcess.setReadChannel(PyQt5.QtCore.QProcess.StandardError) #Tell qt that when we use bytesAvailable() or readLine() we want to refer to STDERR and not STDOUT
 		while self.activeProcess.bytesAvailable() != 0: #While we haven't read all of the data from the process' stderr
 			self.associatedWindow.outputWindow.setPlainText(self.associatedWindow.outputWindow.toPlainText() + str(self.activeProcess.readLine(),"utf-8")) #Read an additional line from stderr as bytes, decode it as UTF-8 and then append this to the output window
-
+		if "No such file or directory" in self.associatedWindow.outputWindow.toPlainText():
+			self.associatedWindow.outputWindow.setPlainText(self.associatedWindow.outputWindow.toPlainText()+"\nHave you forgotten to put quotes around the file path?")
+            
 	def runFile(self):
 		"""Runs the selected file in the list of files menu on its own according to the run command in the program settings"""
 		
