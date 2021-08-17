@@ -38,7 +38,7 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		colourToUse.setNamedColor(self.KEYWORD) #Prepare the colour
 		formatToUse.setForeground(colourToUse)
 		for keyword in self.LANGUAGE_KEYWORDS: #For each possbile keyword that could appear
-			for occur in re.finditer("(^|[\\t ])+("+keyword+")[: ]",lineToHighlight,flags=re.MULTILINE): #For every time it appears (the regex here says at least 1 tab or space or the line beginning then the keyword)
+			for occur in re.finditer("(^|[\\t ])+("+keyword+")([: ]|$)",lineToHighlight,flags=re.MULTILINE): #For every time it appears (the regex here says at least 1 tab or space or the line beginning then the keyword)
 				self.setFormat(occur.start(1),len(keyword)+1,formatToUse)#Format the keyword
 
 	#Highlight all functions in the user defined colour. We will afterwards go through and rehighlight any default functions in their colour.

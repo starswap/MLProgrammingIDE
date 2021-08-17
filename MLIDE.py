@@ -14,6 +14,7 @@ import datetime
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
+import numpy as np
 
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
@@ -28,6 +29,10 @@ import UI.LoadScreen
 import UI.findReplace
 import UI.ComplexityResultsUI
 import UI.ComplexityLoading
+
+import MachineLearning.userProficiency
+
+import levels_rc
 
 import CodeFeatures
 
@@ -345,17 +350,23 @@ class Settings(PyQt5.QtWidgets.QDialog):
 			self.settings["pythonCommand"] = "python3"		
 		
 		try:
-			f = open(os.path.join(str(Path.home()),".mlidesettings"),"w+")
+			f = open(os.path.join(str(Path.home()),".mlidesettings"),"r")
 			self.settings = json.loads(f.read())
 			f.close()
-		except json.decoder.JSONDecodeError:
-			pass #No settings file
-			
-	def closeEvent(self, event):
-		self.settings["pythonCommand"] = self.ui.runCommand.text()
+		except json.decoder.JSONDecodeError as e:
+                        print(e)
+                        pass #No settings file
+		print(self.settings)
+		if not("userProf" in self.settings):
+		    self.settings["userProf"] = "Novice"
+
+		self.save()
+	def save(self):
 		f = open(os.path.join(str(Path.home()),".mlidesettings"),"w")
 		f.write(json.dumps(self.settings))
 		f.close()
+	def closeEvent(self, event):
+		self.save()
 		event.accept()
 
 
@@ -419,6 +430,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.comments = []
 		self.unwantedSuggestions = []
+		self.userProficiencyLevelLabel.setText("[Skill Level = "+ self.settings.settings["userProf"] + "]")
+
 		
 	def createCurrentProjectByOpening(self):
                 mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
@@ -566,8 +579,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.activeFileTextbox.textChanged.connect(self.onChangeText)
 		self.runCommandBox.textChanged.connect(self.onChangeText)		
 
-                #Source: https://realpython.com/python-pyqt-qthread/
-                #Prepare the thread to run the ML components.
+		#Source: https://realpython.com/python-pyqt-qthread/
+		#Prepare the thread to run the ML components.
 		self.thread = PyQt5.QtCore.QThread()
 		self.updateScores = UpdateScoresAndComplexity(self)
 		self.updateScores.moveToThread(self.thread)
@@ -577,8 +590,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.updateScores.finished.connect(self.updateScores.deleteLater)
 		self.thread.finished.connect(self.thread.deleteLater)
 		self.thread.start()
-        
 
+		USER_PROF_UPDATE = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the user proficiency level.
+		self.userProfTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user
+		self.userProfTimer.timeout.connect(self.updateUserProficiencyLevel)
+		self.userProfTimer.start(USER_PROF_UPDATE)
 
 	def onMoveCursor(self):
 		pass #breaks undo/redo
@@ -674,8 +690,40 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.unwantedSuggestions.append(self.sender().comment.matchedCode) #Save the code that was matched to create that suggestion so that we don't accidentally create the same suggestion again.
 		self.sender().comment.die() #Delete the comment, causing it to be removed from the screen and from the self.comments array via qt signal-slot events
 
+	def closeEvent(self, event):
+		self.settings.save()
+		event.accept()
 
+	def updateUserProficiencyLevel(self):
+		"""Runs on a timer to grab the user's current code, run the proficiency tester ML model against it and then get a level. It then averages this over all of the user's files. If the level is greater than the user's previous level they have graduated so we let them know."""
 
+		LEVEL_STRINGS = ["Novice","Student","Adept","Veteran","Master"] #These are the names of the different proficiency levels in the program; each one corresponds to one level of Geeks4Geeks resource in this order
+		totalLevelScore = 0 #We add up the levels of all of the files in the user's program and store the total in this variable so we can later take an average over all files.
+		totalFilesScored = 0 #We need to count the number of files scored so we can divide the totalLevelScore by this value to get a per-file average.
+		
+		for i,content in enumerate(self.currentProject.fileContents): #go through all files in the project
+			if self.currentProject.projectFiles[i].endswith(".py"): #Only estimate level of python files
+				levelProbs = MachineLearning.userProficiency.classifyCodeLevel(MachineLearning.userProficiency.processCodeToMatrix(content)) #Convert the code into a matrix by feature extraction and estimate its proficiency level. This function returns a numpy array of 5 probabilities which sum to 1 - the probability of the code being of each of the difference proficiency levels
+				maxLevel = np.argmax(levelProbs,axis=0) #We only care about the highest probability one, which we take as the code's level
+				totalLevelScore += maxLevel[0] #Sum the levels of each file to later take an average.. [the [0] is because the argmax is columnwise and comes nested in a singleton numpy array]
+				totalFilesScored += 1 #..over all files
+		if totalFilesScored == 0:
+			return
+		averageLevelString = LEVEL_STRINGS[round(totalLevelScore/totalFilesScored)] #Convert the score to a level name
+		if LEVEL_STRINGS.index(self.settings.settings["userProf"]) < LEVEL_STRINGS.index(averageLevelString): #if the level has gone up compared to the saved on,
+
+			#Congratulate the user
+			dialogue = PyQt5.QtWidgets.QMessageBox(self)
+			dialogue.setText("You have graduated to skill level " + averageLevelString)
+			dialogue.setIconPixmap(PyQt5.QtGui.QPixmap(":/LevelIcons/"+averageLevelString+".png").scaledToWidth(64)) #Set the correct icon and size for the message box
+			dialogue.setWindowTitle("Congratulations...")
+			dialogue.show()
+			print('\a')
+			#Update the saved level
+			self.settings.settings["userProf"] = averageLevelString
+
+			#Update the text on the main screen
+			self.userProficiencyLevelLabel.setText("[Skill Level = "+ averageLevelString + "]")
 
 
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
@@ -706,7 +754,10 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		#Set up the ctrlW shortcut for easy closing		
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
 		ctrlW.activated.connect(self.close)
-				
+
+		self.userProficiencyLevelLabel.setText("[Skill Level = "+self.IDEWindow.settings.settings["userProf"] + "]")
+
+		self.WelcomeLabel.setText("<img src=':/LevelIcons/"+ self.IDEWindow.settings.settings["userProf"] + ".png' width='64' height='64' style='padding:0px;'> <h1 style='margin:0px;'>Welcome Back</h1>" )
 		#Add ctrl L for learn?
 	def open(self):
 		self.hide()
@@ -717,6 +768,9 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.hide()
 		self.IDEWindow.show()
 		self.IDEWindow.actionNew_Project.trigger()
+
+
+
 def DisplayComplexityAnalyserResults():
 	pass
 	

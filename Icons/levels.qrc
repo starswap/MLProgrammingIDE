@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="LevelIcons">
+    <file>Student.png</file>
+    <file>Veteran.png</file>
+    <file>Adept.png</file>
+    <file>Master.png</file>
+    <file>Novice.png</file>
+  </qresource>
+</RCC>

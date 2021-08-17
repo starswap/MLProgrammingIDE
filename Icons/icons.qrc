@@ -3,4 +3,11 @@
     <file>Screenshot from 2021-07-21 14-52-14.png</file>
     <file>Screenshot from 2021-07-21 14-52-33.png</file>
   </qresource>
+  <qresource prefix="LevelIcons">
+    <file>Adept.png</file>
+    <file>Master.png</file>
+    <file>Novice.png</file>
+    <file>Student.png</file>
+    <file>Veteran.png</file>
+  </qresource>
 </RCC>

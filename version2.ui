@@ -192,7 +192,7 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
     <item row="0" column="4" rowspan="5">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="5,1,0,5,1,0,5,1,0,5,1,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="5,1,0,5,1,0,5,1,0,5,1,0,0,0">
       <property name="spacing">
        <number>0</number>
       </property>
@@ -436,6 +436,47 @@ p, li { white-space: pre-wrap; }
         </property>
         <property name="text">
          <string>Readability</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_6">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="userProficiencyLevelLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Current Proficiency Level</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -1539,7 +1580,7 @@ p, li { white-space: pre-wrap; }
          <x>0</x>
          <y>0</y>
          <width>187</width>
-         <height>419</height>
+         <height>426</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -1574,7 +1615,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1788,6 +1829,8 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="Icons/levels.qrc"/>
+ </resources>
  <connections/>
 </ui>
