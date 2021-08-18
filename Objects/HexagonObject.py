@@ -113,10 +113,20 @@ class EfficiencyHexagon(Hexagon):
 	def __init__(self,parent):
 		super().__init__(parent, resourceURLs=["https://www.bigocheatsheet.com/"]) #FUTURE RELEASE: We could have the hexagons generate these resources by themselves using additional learning algorithms
 		
-	def getScore(self):
-		super().getScore()
-		self.score = random.randint(-10,10)
-
+	def getScore(self,complexityStrings):
+                """Given the complexities of all of the user's functions, computes a rough score for these based on the premise that O(1) is really good and O(2^n) is very bad. Of course not all problems can be solved in all complexities but we neglect to consider that here as that would be quite difficult to implement"""
+                POSSIBLE_COMPLEXITIES = ["1","logn","n","nlogn","n^2","2^n"] #MAINTENANCE: If more complexities are added to the program, their strings should be added here, and their strings and functions in EstimateCodeComplexity. 
+                totalComplexityScore = 0
+                totalSubroutines = 0
+                
+                for result in complexityStrings: #For every complexity string e.g. "logn" from one of the user's functions,
+                        if result in POSSIBLE_COMPLEXITIES: #If we recognise it as a valid complexity
+                                totalComplexityScore = totalComplexityScore + (len(POSSIBLE_COMPLEXITIES)-1-POSSIBLE_COMPLEXITIES.index(result)) #The function scores 5 for O(1), 4 for O(logn) etc. down to 0 for O(2^n)
+                                totalSubroutines += 1          #We count the total number of subroutines we have scored so that we can average over them
+                if totalSubroutines > 0: #VALIDATION: If no subroutines to estimate the complexity of can't give a score as the following code would involve dividing by 0
+                        avg = totalComplexityScore/totalSubroutines #Get average subroutine complexity score
+                        self.score = 10*avg/(len(POSSIBLE_COMPLEXITIES)-1) #Was out of 5 so make out of ten
+                        super().getScore() #Call the superclass method we are extending so the calculated score is displayed (the superclass method contains the code common to all Hexagons which display in the same way)
 
 class EfficacyHexagon(Hexagon):
 	def __init__(self,parent):

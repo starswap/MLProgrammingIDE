@@ -430,7 +430,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.comments = []
 		self.unwantedSuggestions = []
-		self.userProficiencyLevelLabel.setText("[Skill Level = "+ self.settings.settings["userProf"] + "]")
+		self.userProficiencyLevelLabel.setText("Skill Level = "+ self.settings.settings["userProf"])
 
 		
 	def createCurrentProjectByOpening(self):
@@ -567,7 +567,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.actionFormat_Code.triggered.connect(lambda : self.activeFileTextbox.setPlainText(CodeFeatures.formatCode(self.activeFileTextbox.toPlainText())) )
 		
 		#Get initial score values
-		self.EfficiencyHexagon.getScore()
 		self.EfficacyHexagon.getScore(self.currentProject)
 		self.EleganceHexagon.getScore()
 		self.ReadabilityHexagon.getScore()
@@ -692,6 +691,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 
 	def closeEvent(self, event):
 		self.settings.save()
+		try:
+			self.thread.exit()
+			self.thread.deleteLater()
+		except RuntimeError:
+			pass #It already got deleted earlier
 		event.accept()
 
 	def updateUserProficiencyLevel(self):
@@ -723,7 +727,9 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			self.settings.settings["userProf"] = averageLevelString
 
 			#Update the text on the main screen
-			self.userProficiencyLevelLabel.setText("[Skill Level = "+ averageLevelString + "]")
+			self.userProficiencyLevelLabel.setText("Skill Level = "+ averageLevelString + "")
+
+
 
 
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
@@ -755,7 +761,7 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		ctrlW = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+W"),self)		
 		ctrlW.activated.connect(self.close)
 
-		self.userProficiencyLevelLabel.setText("[Skill Level = "+self.IDEWindow.settings.settings["userProf"] + "]")
+		self.userProficiencyLevelLabel.setText("Skill Level = "+self.IDEWindow.settings.settings["userProf"] + "")
 
 		self.WelcomeLabel.setText("<img src=':/LevelIcons/"+ self.IDEWindow.settings.settings["userProf"] + ".png' width='64' height='64' style='padding:0px;'> <h1 style='margin:0px;'>Welcome Back</h1>" )
 		#Add ctrl L for learn?
@@ -852,20 +858,23 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 					
 	def prepareComplexity(self):
 		"""Computes, renders and shows the results of analysing the complexity of the user's subroutines, in a new popup window."""
-		outputText = "<p>Complexity of ≈ <ul>" #This variable contains the text that will be shown in the main textbox of the popup
+		outputText = "<p>Complexity of <ul>" #This variable contains the text that will be shown in the main textbox of the popup
 		uts = self.mainWindow.currentProject.unitTests
+		complexities = []
 		for ut in uts: #Code complexity estimation is performed on a UnitTest object
 		         result = self.EstimateCodeComplexity(ut) #The complexity estimation
-		         outputText += "<li>&nbsp;"+ut.functionName+"():&nbsp;&nbsp;&nbsp;&nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
+		         complexities.append(result)
+		         outputText += "<li>&nbsp;"+ut.functionName+"(): ≈ &nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
 
 		outputText += "</ul><br>Last computed at "+ str(datetime.now().strftime("%H:%M:%S")) +"<br />Disclaimer - complexity estimated by empirical observation and so may be inaccurate.</p>" #close remaining tags to get correctly formed HTML before showing on screen #https://www.programiz.com/python-programming/datetime/current-time
 		self.complexityDone.emit(outputText)
-		print("KoP")
+		return complexities
 
 	def update(self):
 		"""Updates scores and complexity analysis estimates. This runs in a separate thread so as to prevent it from freezing the GUI"""
 
-		self.prepareComplexity()
+		compl = self.prepareComplexity()
+		self.mainWindow.EfficiencyHexagon.getScore(compl)
 ##                SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
 ##		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
 ##		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)
