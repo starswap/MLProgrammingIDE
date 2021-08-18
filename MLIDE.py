@@ -11,14 +11,15 @@ import re
 import random
 import time
 import datetime
+import bs4
+import numpy as np
+import requests
 from pathlib import Path
 from datetime import datetime
 from ast import literal_eval
-import numpy as np
 
 from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
-
 
 from UI.CommentObject import Comment
 import UI.baseUI
@@ -32,9 +33,10 @@ import UI.ComplexityLoading
 
 import MachineLearning.userProficiency
 
+import CodeFeatures
+
 import levels_rc
 
-import CodeFeatures
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
 class UnitTestPopup(PyQt5.QtWidgets.QDialog):
@@ -588,6 +590,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.updateScores.finished.connect(self.thread.quit)
 		self.updateScores.finished.connect(self.updateScores.deleteLater)
 		self.thread.finished.connect(self.thread.deleteLater)
+		self.updateScores.makeComment.connect(lambda text, code : self.makeComment(text,self.commentsPane,code))
 		self.thread.start()
 
 		USER_PROF_UPDATE = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the user proficiency level.
@@ -678,12 +681,15 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 							lineNo = i+2 #Adjust for the fact that we want the line numbers to start from 1 to match those displayed in the IDE
 							break
 					
-					newComm = Comment("On line " + str(lineNo) + ", have you considered using " + commentText ,self.commentsPane,matchedCode) #Create a new comment with the correct message, referring to the correct part of the user's code
-					newComm.ui.dismissButton.clicked.connect(self.unwantedComment) #Setup the event callback for when the user dismisses the suggestion
-					newComm.deleted.connect(lambda : self.comments.remove(self.sender())) #Setup the event callback for when the comment is deleted to make sure that we remove it from self.comments such that this is always accurate
-					
+					newComm = self.makeComment("On line " + str(lineNo) + ", have you considered using " + commentText ,self.commentsPane,matchedCode) #Create a new comment with the correct message, referring to the correct part of the user's code
 					self.comments.append(newComm) #Save a handle on the comment we just made for later e.g. for when we want to delete it
-			
+
+	def makeComment(self,commentText,parent,commentCode):
+		newComm = Comment(commentText ,parent,commentCode) #Create a new comment with the correct message, referring to the correct part of the user's code
+		newComm.ui.dismissButton.clicked.connect(self.unwantedComment) #Setup the event callback for when the user dismisses the suggestion
+		newComm.deleted.connect(lambda : self.comments.remove(self.sender())) #Setup the event callback for when the comment is deleted to make sure that we remove it from self.comments such that this is always accurate
+		return newComm
+					
 	def unwantedComment(self):
 		"""Triggered when the user presses dismiss suggestion on a comment"""
 		self.unwantedSuggestions.append(self.sender().comment.matchedCode) #Save the code that was matched to create that suggestion so that we don't accidentally create the same suggestion again.
@@ -728,10 +734,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 
 			#Update the text on the main screen
 			self.userProficiencyLevelLabel.setText("Skill Level = "+ averageLevelString + "")
-
-
-
-
+        
+                
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 	def __init__(self, IDEWindow, parent=None):
 		super(LoadScreen, self).__init__(parent)
@@ -790,7 +794,7 @@ def setClipboardText(text):
 class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 	finished = PyQt5.QtCore.pyqtSignal()
 	complexityDone = PyQt5.QtCore.pyqtSignal(str)
-
+	makeComment = PyQt5.QtCore.pyqtSignal(str,str)
 
 	def __init__(self,mainWindow):
 		self.mainWindow = mainWindow
@@ -862,19 +866,85 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 		uts = self.mainWindow.currentProject.unitTests
 		complexities = []
 		for ut in uts: #Code complexity estimation is performed on a UnitTest object
-		         result = self.EstimateCodeComplexity(ut) #The complexity estimation
-		         complexities.append(result)
-		         outputText += "<li>&nbsp;"+ut.functionName+"(): ≈ &nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
-
+			 result = self.EstimateCodeComplexity(ut) #The complexity estimation
+			 complexities.append(result)
+			 outputText += "<li>&nbsp;"+ut.functionName+"(): ≈ &nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
+			 ut.lastComplexityEstimate = result
 		outputText += "</ul><br>Last computed at "+ str(datetime.now().strftime("%H:%M:%S")) +"<br />Disclaimer - complexity estimated by empirical observation and so may be inaccurate.</p>" #close remaining tags to get correctly formed HTML before showing on screen #https://www.programiz.com/python-programming/datetime/current-time
 		self.complexityDone.emit(outputText)
 		return complexities
+	
+	def findFasterCodeOnline(self):
+		"""Searches online for code with the same purpose but a better complexity compared to code in one of the user's subroutines. Better code is suggested by the creation of a speech bubble comment."""
+		
+		VALID_COMPLEXITIES = ["1","logn","n","nlogn","n^2","2^n"] #MAINTENANCE: If more complexities are added to the program, their strings should be added here, and their strings and functions in EstimateCodeComplexity. 
+		MAXIMUM_URLS = 2 #MAINTENANCE: This is the maximum number of complexity improvement urls the user could be presented with in any one comment
+
+		#This code is running in a separate thread to the main GUI to avoid causing it to hang during the web requests which are quite slow
+		#In order to prevent hanging, we need to extract the data we want from the currentProject and then process that, rather than for example iterating over
+		#...unitTests in place, which could cause frozen GUI
+		uts = self.mainWindow.currentProject.unitTests
+		projectFiles = self.mainWindow.currentProject.projectFiles
+		fileContents = self.mainWindow.currentProject.fileContents
+
+		for ut in uts: #For all unit tests in the current project
+			fileIndex = projectFiles.index(os.path.split(ut.functionFileName)[1]) #Split filename from path and find the index of the filename in the projectFiles array, which allows us to get the contents from fileContents
+			code = fileContents[fileIndex] #Get the code of the file containing the function
+			
+			match = re.match("def +(.+):\n[\t ]*\"\"\"(.+)\"\"\"\n",code) #Get the function's docstring in the second capture group
+			docstring = match.group(2)
+
+			#Search for a better complexity for a function with the same purpose/docstring
+			#The cookie is for accepting Google Search's terms without having to click the accept button - which this automated code can't do
+			query = "best complexity for " + docstring
+			html = bs4.BeautifulSoup(requests.get("https://www.google.com/search?channel=fs&client=ubuntu&q="+query,cookies={"CONSENT":"YES+srp.gws-"+str(datetime.now().strftime("%Y%m%d"))+"-0-RC2.en+FX+899"}).text)
+
+			#Get the main content of the page and look for a tags which might yield useful pages
+			main = html.find("div",{"id":"main"})
+			aTags = [cont.find("a") for cont in main.findChildren()]
+			links = [] #This will store all links which the program has deemed to be useful, having filtered out the rest
+			
+			for item in aTags: #go through all aTags and select only useful ones up to a maximum of MAXIMUM_URLS
+				if item: #If there were no aTags under one child of main then we get a None value which we can't process so we should skip it
+					if item["href"].startswith("/url?q="): #These are links to external pages whereas /search ones are internal google pages which we don't want
+
+						toLookInto = item["href"][7:] #Skip the front bit (/url?q=) to get just the URL of the page we want to visiy
+						if toLookInto in links: #We already got this one
+							continue #...so skip it
+
+						html2 = requests.get(toLookInto).text #Get the html content of the page that we just found via google
+						print(toLookInto)
+						complexityMatches = re.finditer("[oO]\((.+?)\)",html2) #Look for any big O notation
+						for match in complexityMatches: #For every reference to O(something)
+							gp = match.group(1).replace("(","").replace(")","").replace(" ","") #Remove any brackets and spaces in case people wrote e.g. O(log n) or O(log(n)) which otherwise would not be found
+
+							#VALIDATION: If the complexity string is valid and better than the user's current one, then
+							if ((gp in VALID_COMPLEXITIES) and (ut.lastComplexityEstimate in VALID_COMPLEXITIES)) and (VALID_COMPLEXITIES.index(gp) < VALID_COMPLEXITIES.index(ut.lastComplexityEstimate)):
+								links.append(toLookInto) #Save the link to later present to the user
+								break #Break out of the loop over the complexity notation matches because we know this link is good so we
+								#..don't need to examine any more on this link
+							
+						if len(links) == MAXIMUM_URLS: #Stop if we already have enough good links
+							break
+						
+
+		if len(links) > 0: #If we found at least one useful link
+			#Build the message we want to send to the user with some html markup so the links can be clicked on and are well displayed
+			commentText = "The subroutine '"+ut.functionName+"' might be less efficient than it needs to be. Check these links: <ul>"
+			for link in links:
+				commentText = commentText + "<li><a href='" + link + "'>" + link.split("/")[2] + "</a></li>"
+			commentText += "</ul>"
+
+			#Emit a Qt Signal which is picked up by the main thread, to display the comment (we can't create UI elements from this thread/#) 
+			self.makeComment.emit(commentText,ut.functionName)
 
 	def update(self):
 		"""Updates scores and complexity analysis estimates. This runs in a separate thread so as to prevent it from freezing the GUI"""
-
+	
+		
 		compl = self.prepareComplexity()
 		self.mainWindow.EfficiencyHexagon.getScore(compl)
+		self.findFasterCodeOnline()
 ##                SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
 ##		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
 ##		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)

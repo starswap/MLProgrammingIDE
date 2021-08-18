@@ -51,7 +51,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
       <item>
-       <widget class="QTextEdit" name="commentText">
+       <widget class="QTextBrowser" name="commentText">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -62,6 +62,9 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Arial'; color:#000000; background-color:transparent;&quot;&gt;To add your own syntax hints, edit the Syntax_Rules.txt file. You can also share this file with others.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="openExternalLinks">
          <bool>true</bool>
         </property>
        </widget>

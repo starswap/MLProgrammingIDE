@@ -3,4 +3,6 @@ pip3 instal  PyQt5-tools
 pip3 install git+https://bitbucket.org/william_rusnack/to-precision.git
 pip3 install jinja2
 pip3 install numpy #Have to get a new version
+pip3 install bs4
+pip3 intall requests
 sudo apt-get install pyqt5-dev-tools

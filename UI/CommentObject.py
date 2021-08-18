@@ -16,7 +16,7 @@ class Comment(PyQt5.QtWidgets.QWidget):
 		commentText = commentText.replace("<code>","<br><span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>") 
 		commentText = commentText.replace("</code>","</span><br>")
 		
-		self.ui.commentText.setHtml(commentText) #Put the text on screen in the right place
+		self.ui.commentText.setHtml(commentText) #Put the text on screen in the right place	
 		
 		parentLayout.addWidget(self) #Insert into parent at the top so it displays on screen in the correct place
 	
