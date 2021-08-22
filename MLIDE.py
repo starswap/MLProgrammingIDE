@@ -759,6 +759,8 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+N"),self)
 		shortcut.activated.connect(self.openProjectButton.click)
 		shortcut2.activated.connect(self.newProjectButton.click)
+		shortcut3 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+L"),self)
+		shortcut3.activated.connect(self.newResourceButton.click)
 		
 		
 		#Set up the ctrlW shortcut for easy closing		
@@ -887,7 +889,11 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 		projectFiles = self.mainWindow.currentProject.projectFiles
 		fileContents = self.mainWindow.currentProject.fileContents
 
-		for ut in uts: #For all unit tests in the current project
+		links = [] #This will store all links which the program has deemed to be useful, having filtered out the rest
+
+		for ut in uts: #For all unit tests in the current project                        
+			if ut.lastComplexityEstimate == "1":
+				continue #Can't get better
 			fileIndex = projectFiles.index(os.path.split(ut.functionFileName)[1]) #Split filename from path and find the index of the filename in the projectFiles array, which allows us to get the contents from fileContents
 			code = fileContents[fileIndex] #Get the code of the file containing the function
 			
@@ -902,8 +908,8 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 			#Get the main content of the page and look for a tags which might yield useful pages
 			main = html.find("div",{"id":"main"})
 			aTags = [cont.find("a") for cont in main.findChildren()]
-			links = [] #This will store all links which the program has deemed to be useful, having filtered out the rest
-			
+
+			requestsMade = 0
 			for item in aTags: #go through all aTags and select only useful ones up to a maximum of MAXIMUM_URLS
 				if item: #If there were no aTags under one child of main then we get a None value which we can't process so we should skip it
 					if item["href"].startswith("/url?q="): #These are links to external pages whereas /search ones are internal google pages which we don't want
@@ -911,9 +917,11 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 						toLookInto = item["href"][7:] #Skip the front bit (/url?q=) to get just the URL of the page we want to visiy
 						if toLookInto in links: #We already got this one
 							continue #...so skip it
-
-						html2 = requests.get(toLookInto).text #Get the html content of the page that we just found via google
 						print(toLookInto)
+						html2 = requests.get(toLookInto).text #Get the html content of the page that we just found via google
+						requestsMade += 1
+						if requestsMade >= 3*MAXIMUM_URLS:
+							break #Stop it from continuing forever if no good urls are found
 						complexityMatches = re.finditer("[oO]\((.+?)\)",html2) #Look for any big O notation
 						for match in complexityMatches: #For every reference to O(something)
 							gp = match.group(1).replace("(","").replace(")","").replace(" ","") #Remove any brackets and spaces in case people wrote e.g. O(log n) or O(log(n)) which otherwise would not be found
@@ -926,6 +934,7 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 							
 						if len(links) == MAXIMUM_URLS: #Stop if we already have enough good links
 							break
+						time.sleep(1) #Pause in between searches in order to avoid breaking any websites by spamming
 						
 
 		if len(links) > 0: #If we found at least one useful link

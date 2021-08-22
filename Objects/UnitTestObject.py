@@ -41,10 +41,13 @@ codeToTest = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(codeToTest)
 print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor %}),end="")
 """ #This is the code that will be run to test the user's code. We first import the file containing the user's code and then we run the function with the required arguments. The TEMPLATE variable is in jinja template format as the actual function name, file name and arguments will be filled in at runtime. 
+		for i in range(len(arguments)):
+			if type(arguments[i]) == str:
+				arguments[i] = "'" + arguments[i] + "'"
 		filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=arguments) #Fill in the template code so that the function executed is the user's one
 		
 		#Write the filled in template out to a file which we can then run to execute it
-                #Template code source: https://stackoverflow.com/questions/8577137/how-can-i-create-a-tmp-file-in-python
+		#Template code source: https://stackoverflow.com/questions/8577137/how-can-i-create-a-tmp-file-in-python
 		fd, path = tempfile.mkstemp()
 		try:
 			with os.fdopen(fd, 'w') as g:

@@ -2,3 +2,18 @@ Numerous free resources have contributed to this project including:
         Icons:
                 Computer Icon - Icon made by PrettyCons from www.flaticon.com
                 Book on screen Icon, Wizard Level icons, Student Level icon, Graduate Level icon, Soldier Level icon - Icon made by FreePik from www.flaticon.com
+
+	Resources linked when you click "Learn something new":
+		Geeks4Geeks
+	
+	Machine Learning
+		Professor Andrew Ng, DeepLearning.AI + Stanford Coursera courses were useful in learning how to do machine learning
+		Datasets used:
+			https://github.com/github/CodeSearchNet
+			https://www.sri.inf.ethz.ch/py150
+			Dorn readability dataset (Python examples only - downloadable from second link on right)		
+
+	Code Snippets
+		See links in code
+
+Made by Hamish Starling as an OCR A Level Computer Science NEA project.

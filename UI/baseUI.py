@@ -306,6 +306,8 @@ class Ui_MainWindow(object):
         self.commentsPane = QtWidgets.QVBoxLayout()
         self.commentsPane.setSpacing(6)
         self.commentsPane.setObjectName("commentsPane")
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.commentsPane.addItem(spacerItem)
         self.verticalLayout_2.addLayout(self.commentsPane)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.gridLayout.addWidget(self.scrollArea, 1, 3, 2, 1)
