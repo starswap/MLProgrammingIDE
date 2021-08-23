@@ -434,7 +434,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.unwantedSuggestions = []
 		self.userProficiencyLevelLabel.setText("Skill Level = "+ self.settings.settings["userProf"])
 
-		
+                #Show the tutorial when the tutorial menu action is chosen
+		self.actionShow_Tutorial.triggered.connect(self.showTutorial)
 	def createCurrentProjectByOpening(self):
                 mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
                 try:
@@ -734,6 +735,13 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 
 			#Update the text on the main screen
 			self.userProficiencyLevelLabel.setText("Skill Level = "+ averageLevelString + "")
+
+	def showTutorial(self):
+		"""Opens the tutorial in the user's default browser."""
+		TUTORIAL_FILE_NAME = "Tutorial/tutorial.html"
+		PyQt5.QtGui.QDesktopServices.openUrl(PyQt5.QtCore.QUrl.fromLocalFile(TUTORIAL_FILE_NAME))
+                
+
         
                 
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
@@ -754,13 +762,19 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		
 		self.newProjectButton.clicked.connect(self.new)
 		self.openProjectButton.clicked.connect(self.open)
-
+		self.newResourceButton.clicked.connect(lambda : self.getUserLevelResource(self.IDEWindow.settings.settings["userProf"]))
+		self.showTutorialButton.clicked.connect(self.IDEWindow.showTutorial)
+	
 		shortcut = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+O"),self)
 		shortcut2 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+N"),self)
 		shortcut.activated.connect(self.openProjectButton.click)
 		shortcut2.activated.connect(self.newProjectButton.click)
 		shortcut3 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("Ctrl+L"),self)
 		shortcut3.activated.connect(self.newResourceButton.click)
+
+		#Connect the shortcut F12 to the tutorial so it displays when this key is pressed
+		shortcut4 = PyQt5.QtWidgets.QShortcut(PyQt5.QtGui.QKeySequence("F12"),self)
+		shortcut4.activated.connect(self.showTutorialButton.click)
 		
 		
 		#Set up the ctrlW shortcut for easy closing		
@@ -770,7 +784,7 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.userProficiencyLevelLabel.setText("Skill Level = "+self.IDEWindow.settings.settings["userProf"] + "")
 
 		self.WelcomeLabel.setText("<img src=':/LevelIcons/"+ self.IDEWindow.settings.settings["userProf"] + ".png' width='64' height='64' style='padding:0px;'> <h1 style='margin:0px;'>Welcome Back</h1>" )
-		#Add ctrl L for learn?
+
 	def open(self):
 		self.hide()
 		self.IDEWindow.show()
@@ -781,10 +795,23 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.IDEWindow.show()
 		self.IDEWindow.actionNew_Project.trigger()
 
+	def getUserLevelResource(self,userProficiencyLevelString):
+                """Uses the saved user proficiency/skill level to extract a resource from the Geeks4Geeks website, at the correct level for this user, to display in the user's web browser."""
+                userProfMatchups = {"Novice":"basic","Student":"easy","Adept":"medium","Veteran":"hard","Master":"expert"} #Conversion between my skill levels and G4G article difficulty levels
 
+                #Search for articles in Python at the correct level, and choose a random page of the results from 1 to 10.
+                pageText = requests.get("https://www.geeksforgeeks.org/"+userProfMatchups[userProficiencyLevelString]+"/python/" + str(random.randint(1,10))).text #all levels have at least 10 pages of articles.
 
-def DisplayComplexityAnalyserResults():
-	pass
+                #Find all python articles linked.
+                html = bs4.BeautifulSoup(pageText) 
+                articles = html.find("div",{"class":"articles-list"}).findChildren("div",{"class":"articles-list_item"})
+
+                #Select a random one and open it in the user's browser.
+                articleURL = random.choice(articles).findChild().findChild().findChild()["href"]
+                PyQt5.QtGui.QDesktopServices.openUrl(PyQt5.QtCore.QUrl(articleURL)) #Opens a random resource from the ones the hexagon has set as appropriate in the user's default browser
+                
+                
+
 	
 def ApplyCommentGeneration():
 	pass

@@ -1,30 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Tutorial: ML Programming IDE </title>
+		<title>Tutorial: μλ (ML) Programming IDE </title>
 		<style>
+			/*Set the font of the page. By default most browsers display a small indent around the page. Here we reset that to 0 so we can control it ourselves.
+			the main page content still has a 10px margin but the footer can now be displayed right the way across the bottom of the page.*/
 			body {
 				font-family: sans-serif;
+				margin: 0px;
 			}
+			#mainPageContent {
+				margin-left: 10px;
+			}
+			
+			/*Make sure all tables display with borders around them and then internal lines as well, and the text should be centred.*/
 			table {
 				text-align: center;
 			}
 			table, td, tr, th {
 				border: solid 1px black;
 			}
+			/*Create spacing inside tables so they look nice.*/
 			td, th {
-				padding: 10px;
+				padding: 10px; 
 			}
+			
+			/*Define a class style for code blocks with monospace font and grey background, so we can easily reuse this throughout*/
 			.code {
 				font-family: "Courier New", monospace;
 				background-color: lightgray;
 			}
+			
+			/*Any list items that are direct children of an ordered list should have 8px of padding. The ol is the main bulk of the first section so to make it clearer
+			to read we use additional spacing*/
 			ol > li {
 				padding: 8px;
 			}
+			
+			/*Colour questions in the FAQ purple to distinguish them from answers which are black.*/
 			.FAQ {
 				color: #1500a1;
 			}
+			
+			/*Footer at the bottom with my name and the words OCR A Level Computer Science should be purple with white, centred text. It should have no outer margin
+			so that it extends to both sides of the page and it should have upper padding so the text isn't flush with the edge of the container.*/
 			footer {
 				color: white;
 				background-color: #1500a1;
@@ -34,101 +53,100 @@
 				margin-left: 0px;
 				margin-right: 0px;
 			}
-			body {
-				margin: 0px;
-			}
-			#mainPageContent {
-				margin-left: 10px;
-			}
+
+
 		</style>
 	</head>
-	<body> <div id="mainPageContent">
-		<h1>ML Programming IDE Tutorial</h1>
-		<p>Welcome to the ML Programming IDE; thanks for downloading.</p>
-		<p>The ML Programming IDE is a tool designed to help you write better code in the Python programming language.</p>
-		<h2>Introduction to the IDE</h2>
-		<ol>
-			<li>When you open the IDE, you will see the following load screen: <br /><img src="loadScreen.png" width="300"/><br><ul><li>The left hand side of this screen launches the main IDE, in which you can code in Python. You can either start a new project or open an existing one once you have created one.</li><li>On the right hand side, the "Learn something new" button will take you to an interesting programming resource to learn more about Python. As you code every day, the IDE tracks your progress and maintains a skill level which represents how good it thinks you are at programming. The resource shown when you click "Learn something new" is tailored to your skill level. See below for more information about skill levels.</li><li>The icon at the top of the window, in this case of a wizard, is the avatar associated with your skill level, in this case "Veteran".</li></ul></li>
-			<li>Clicking on one of the left hand buttons to open the main IDE, we see this screen:<br /><img src="mainWindow.png" width="400"/><br><ul><li>Programs in this IDE are organised around Projects. These are directories/folders which contain all of the code for a specific project, and a metadata file called a .mlideproj file. These are stored in JSON format, and can be opened with a simple text editor (e.g. notepad). Note that they are not by default associated with the MLIDE program, but you can change this simply by right clicking and opening one with the IDE. (in Windows). The file menu allows you to manipulate your project. You can create a new project or open an existing one. You can create a new file inside the current project, or add one which resides elsewhere on disk into the current project, opening it in the IDE.</li><li>Now we have opened a project in the IDE, we can see some of its different parts<ul><li>On the far left we have the list of files menu, which shows all files in the current project. Clicking on one will show that file's data in the main window, and right clicking allows you to run file or copy file path.</li><li>At the top, we have the run command box. In this box you can type a command which will be executed on your system when you click the big green run button next to it, which executes your program. If you're not sure, you probably want to type either <span class="code">python3 FILEPATH_TO_EXECUTE</span> (Linux) or <span class="code">py FILEPATH_TO_EXECUTE</span> (Windows). </li><li>When you have finished writing your program in the main programming window, you can run it. To enter input to the program, you type it in the dark grey box in the bottom third of the screen. To send the input to the program, click "Send Input". This way you can paste or mainpulate input there and then before sending it. Don't forget to tick/untick the "Append Enter" checkbox. This box determines whether or not a newline (\n) character will be added to the end of your input, which will, for many programs, submit/confirm the input typed (e.g. python input() command).</li><li>At the bottom, we have the execution results window, which displays the result of the program's execution, when it is run.</li><li>The next column across from the main section is the comment window. In this pane, an AI "expert system" makes comments on the code you have written, in terms of how it can be improved. In this pane you'll see comments about using new Python techniques like list comprehensions or, in this case, the ternary operator or suggestions of links you could visit to find out how to make your code more efficient.</li><li>In the same vertical pane as the comments, we also find the find-replace box, which appears when one presses Ctrl-F and can be used with regular expression searches as necessary.</li><li>On the far right, we have the scores pane. This contains 4 coloured hexagons, each with a score out of 10, to 1 dp. Your code is dynamically assessed by the IDE to determine how effective, efficient, readable and elegant it is, and as you type you will see these scores update. Of course the aim is to get them as high as possible. To get some inspiration for how to improve your scores, you can right click on a given score hexagon. If you don't want a particular score at any time, left click it to disable.</li></ul></li></ul></li>
-			<li>At the top of the IDE, we have the menu. Most of the options are self-explanatory, so won't be discussed here. The Unit Tests tab is potentially different to many existing IDEs, and is one of the more powerful features of this program, and so will be explained in detail: <br /><img src="unitTestMenu.png" /><br /><ul><li>Clicking Enter Unit Tests brings up the unit test entry window for the current project.<br><img src="enterUnitTestsNoTests.png" width="300"/><img src="EnterUnitTests.png" width="300"/></li><li>In the MLIDE, (and elsewhere) a unit test is a black box input/output test that can be run against a subroutine inside your code, to check whether it is working or not. You specify some input to the subroutine, and the subroutine is run with that input. Then, the output from the subroutine is compared to the output you specify, which should correspond to this input. If they match, that's a pass, otherwise the test is failed. These tests are useful because they can help you track your progress when writing code designed module by module, and they can also help to find errors, as you can locate exactly which subroutine is not working. This can be useful for debugging and for checking that any changes you have made to one part of your program have not broken the rest of it.</li><li>As unit tests are run on a function by function basis, unit tests in this IDE are stored with their corresponding functions, so to make one, you first need to specify the function it will run against, the number of input arguments to the function, and the file in which you will code that function. It is recommended to create all unit tests before starting programming so you don't forget what your program was designed to do.</li><li>Adding a function creates a table like the one we can see in the right hand image above. Each row (apart from the first two) represents one I/O test. The add test button will add an additional row in the table, so you can write more than one test per function. The top two rows can be used to provide documentation about the input and ouput of the functions, i.e. what datatypes these should have and the constraints on their values. These are used when estimating the algorithmic complexity of the functions (see below). Constraints are specified as a list of lists. Each internal list specifies one constraint on the input/output (see below); be aware that the Constraints box data is interpreted as a python literal. Currently the available constraint values are quite limited, but these may be extended in the future.</li><li>Valid Types and Constraints<ul><li>Type: Int, Constraints: ["Range",<span style="font-style:italic">minValue</span>,<span style="font-style:italic">maxValue</span>]</li><li>Type: Float, Constraints: ["Range",<span style="font-style:italic">minValue</span>,<span style="font-style:italic">maxValue</span>]</li><li>Type: String, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>] ["Alphabet",<span style="font-style:italic">possibleCharacters</span>]</li><li>Type: ListInt, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>]</li><li>Type: ListBool, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>]</li><li>Type: ListFloat, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>]</li></ul>Note that types and constraints are necessary to perform complexity analysis but are optional for the basic unit test entry and execution features of the program.</li><li>Once unit tests have been entered, and saved, you can run them against your code at any time by selecting Display Test Results or pressing Ctrl-F5. The following window appears, detailing for each function the tested inputs, expected outputs, actual outputs, pass/fail and time taken. <br><img src="UnitTestResults.png" width="400" /></li><li>Perhaps the most exciting part of the Unit Test interface is the ability for the algorithmic complexity (efficiency) of the user's functions to be estimated. In order for this to happen, the function needs a valid unit test and set of input types (and optionally constraints). Currently, complexity estimation only works for functions which take <strong>exactly 1 argument.</strong> Note that the complexity analysis involves empirical observation by execution of the code. I.e your code is run with a variety of different input sizes (usually large) to estimate the complexity, meaning it is slow and can be incorrect. The complexity analysis is automatically performed for you in the background every so often, so clicking on the Display Complexity Analysis Results option will display the most recent results if these are available. If the results do not seem to be updating, first wait 5 minutes with the IDE open, then reopen the complexity analysis results, and then try closing the IDE and reopening if this doesn't work. When we click on the option and complexity results are available, we see the following window: <br /><img src="complexity1.png" /><br />As you can see, an estimated time complexity in big O notation is provided for each function which had unit tests and types.</li></ul></li>
-		</ol>
-		
-		<h2>Skill levels</h2>
-		<p>Your skill level is determined by a Machine Learning algorithm running on the code you write every day. It can take one of five values. Each of these values has its own avatar, which is displayed in the load screen.</p>
-		<p>As alluded to above, the skill level is linked to the resources displayed when you click "Learn something new" in the load screen. The resources shown come from the programming website <a href="https://www.geeksforgeeks.org/">GeeksForGeeks</a>. Each skill level in this program is matched to one level of GeeksForGeeks resource, so you should get something that's just the right level for you:</p>
-		<table>
-			<tr><th>Avatar</th><th>MLIDE User Skill Level</th><th>GeeksForGeeks Article Difficulty Level</th></tr>
-			<tr><td><img src="Novice.png" height="64" width="64" /></td><td>Novice</td><td>Basic</td></tr>
-			<tr><td><img src="Student.png" height="64" width="64" /></td><td>Student</td><td>Easy</td></tr>
-			<tr><td><img src="Adept.png" height="64" width="64" /></td><td>Adept</td><td>Medium</td></tr>
-			<tr><td><img src="Veteran.png" height="64" width="64" /></td><td>Veteran</td><td>Hard</td></tr>
-			<tr><td><img src="Master.png" height="64" width="64" /></td><td>Master</td><td>Expert</td></tr>
-		</table>
+	<body> 
 
-		<h2>Code Scores</h2>
-		The code scores displayed in the Hexagons reflect how good the program thinks your code is. They are from 0-10 to 2sf, but note that it isn't always possible to achieve maximum score for certain tasks. The scores are generated in the following way:
-		<ul>
-			<li>Efficacy Scores: The score is the percentage of the entered unit tests that your code is currently passing, scaled to be out of ten</li>
-			<li>Elegance Scores: The score is a combination of the readability score, the number of available elegance suggestions (comments) which the user has not yet taken on board or rejected as wrong, repetition and length of code</li>
-			<li>Readability Scores: The score is determined by a machine learning algorithm trained on the Dorn dataset</li>
-			<li>Efficiency Scores: The score is a simple transformation of the average complexity of subroutines in your project, so that the more efficient your subroutines are on average (by complexity estimation), the higher the score. Of course some tasks cannot be achieved in certain complexities (e.g. comparison sorts are limited to O(nlog(n))), so this may be less beneficial than the other scores.</li>
-		</ul>
-		Remember that any of these can be turned off by a simple left click on the corresponding hexagon at any point. This allows you to focus on what matters to you for a given coding project.
+		<div id="mainPageContent"> <!--This part of the page is indented a bit to the right so it it more readable -->
+			<h1>ML Programming IDE Tutorial</h1>
+			
+			<p>Welcome to the ML Programming IDE</p>
+			<p>The ML Programming IDE is a tool designed to help you write better code in the Python programming language.</p>
+			<h2>Introduction to the IDE</h2>
+			<ol>
+				<li>When you open the IDE, you will see the following load screen: <br /><img src="loadScreen.png" width="300" alt="The first screen of the program (load screen)"/><br><ul><li>The left hand side of this screen launches the main IDE, in which you can code in Python. You can either start a new project or open an existing one once you have created one.</li><li>On the right hand side, the "Learn something new" button will take you to an interesting programming resource to learn more about Python. As you code every day, the IDE tracks your progress and maintains a skill level which represents how good it thinks you are at programming. The resource shown when you click "Learn something new" is tailored to your skill level. See below for more information about skill levels.</li><li>The icon at the top of the window, in this case of a wizard, is the avatar associated with your skill level, in this case "Veteran".</li></ul></li>
+				<li>Clicking on one of the left hand buttons to open the main IDE, we see this screen:<br /><img src="mainWindow.png" width="400" alt="The main window of the program, reached by clicking open or new from the load screen"/><br><ul><li>Programs in this IDE are organised around Projects. These are directories/folders which contain all of the code for a specific project, and a metadata file called a .mlideproj file. These are stored in JSON format, and can be opened with a simple text editor (e.g. notepad). Note that they are not by default associated with the MLIDE program, but you can change this simply by right clicking and opening one with the IDE. (in Windows). The file menu allows you to manipulate your project. You can create a new project or open an existing one. You can create a new file inside the current project, or add one which resides elsewhere on disk into the current project, opening it in the IDE.</li><li>Now we have opened a project in the IDE, we can see some of its different parts<ul><li>On the far left we have the list of files menu, which shows all files in the current project. Clicking on one will show that file's data in the main window, and right clicking allows you to run file or copy file path.</li><li>At the top, we have the run command box. In this box you can type a command which will be executed on your system when you click the big green run button next to it, which executes your program. If you're not sure, you probably want to type either <span class="code">python3 FILEPATH_TO_EXECUTE</span> (Linux) or <span class="code">py FILEPATH_TO_EXECUTE</span> (Windows). </li><li>When you have finished writing your program in the main programming window, you can run it. To enter input to the program, you type it in the dark grey box in the bottom third of the screen. To send the input to the program, click "Send Input". This way you can paste or mainpulate input there and then before sending it. Don't forget to tick/untick the "Append Enter" checkbox. This box determines whether or not a newline (\n) character will be added to the end of your input, which will, for many programs, submit/confirm the input typed (e.g. python input() command).</li><li>At the bottom, we have the execution results window, which displays the result of the program's execution, when it is run.</li><li>The next column across from the main section is the comment window. In this pane, an AI "expert system" makes comments on the code you have written, in terms of how it can be improved. In this pane you'll see comments about using new Python techniques like list comprehensions or, in this case, the ternary operator or suggestions of links you could visit to find out how to make your code more efficient.</li><li>In the same vertical pane as the comments, we also find the find-replace box, which appears when one presses Ctrl-F and can be used with regular expression searches as necessary.</li><li>On the far right, we have the scores pane. This contains 4 coloured hexagons, each with a score out of 10, to 1 dp. Your code is dynamically assessed by the IDE to determine how effective, efficient, readable and elegant it is, and as you type you will see these scores update. Of course the aim is to get them as high as possible. To get some inspiration for how to improve your scores, you can right click on a given score hexagon. If you don't want a particular score at any time, left click it to disable.</li></ul></li></ul></li>
+				<li>At the top of the IDE, we have the menu. Most of the options are self-explanatory, so won't be discussed here. The Unit Tests tab is potentially different to many existing IDEs, and is one of the more powerful features of this program, and so will be explained in detail: <br /><img src="unitTestMenu.png" alt="Options available under the UnitTests drop down at the top of the screen"/><br /><ul><li>Clicking Enter Unit Tests brings up the unit test entry window for the current project.<br><img src="enterUnitTestsNoTests.png" width="300" alt="The unit test entry window before you enter any tests."/><img src="EnterUnitTests.png" width="300" alt="The unit test entry window with some entered tests."/></li><li>In the MLIDE, (and elsewhere) a unit test is a black box input/output test that can be run against a subroutine inside your code, to check whether it is working or not. You specify some input to the subroutine, and the subroutine is run with that input. Then, the output from the subroutine is compared to the output you specify, which should correspond to this input. If they match, that's a pass, otherwise the test is failed. These tests are useful because they can help you track your progress when writing code designed module by module, and they can also help to find errors, as you can locate exactly which subroutine is not working. This can be useful for debugging and for checking that any changes you have made to one part of your program have not broken the rest of it.</li><li>As unit tests are run on a function by function basis, unit tests in this IDE are stored with their corresponding functions, so to make one, you first need to specify the function it will run against, the number of input arguments to the function, and the file in which you will code that function. It is recommended to create all unit tests before starting programming so you don't forget what your program was designed to do.</li><li>Adding a function creates a table like the one we can see in the right hand image above. Each row (apart from the first two) represents one I/O test. The add test button will add an additional row in the table, so you can write more than one test per function. The top two rows can be used to provide documentation about the input and ouput of the functions, i.e. what datatypes these should have and the constraints on their values. These are used when estimating the algorithmic complexity of the functions (see below). Constraints are specified as a list of lists. Each internal list specifies one constraint on the input/output (see below); be aware that the Constraints box data is interpreted as a python literal. Currently the available constraint values are quite limited, but these may be extended in the future.</li><li>Valid Types and Constraints<ul><li>Type: Int, Constraints: ["Range",<span style="font-style:italic">minValue</span>,<span style="font-style:italic">maxValue</span>]</li><li>Type: Float, Constraints: ["Range",<span style="font-style:italic">minValue</span>,<span style="font-style:italic">maxValue</span>]</li><li>Type: String, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>] ["Alphabet",<span style="font-style:italic">possibleCharacters</span>]</li><li>Type: ListInt, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>]</li><li>Type: ListBool, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>]</li><li>Type: ListFloat, Constraints: ["Length",<span style="font-style:italic">minLength</span>,<span style="font-style:italic">maxLength</span>]</li></ul>Note that types and constraints are necessary to perform complexity analysis but are optional for the basic unit test entry and execution features of the program.</li><li>Once unit tests have been entered, and saved, you can run them against your code at any time by selecting Display Test Results or pressing Ctrl-F5. The following window appears, detailing for each function the tested inputs, expected outputs, actual outputs, pass/fail and time taken. <br><img src="UnitTestResults.png" width="400" alt="The window displayed when we execute the unit tests on a project either from the menu or pressing Ctrl-F5"/></li><li>Perhaps the most exciting part of the Unit Test interface is the ability for the algorithmic complexity (efficiency) of the user's functions to be estimated. In order for this to happen, the function needs a valid unit test and set of input types (and optionally constraints). Currently, complexity estimation only works for functions which take <strong>exactly 1 argument.</strong> Note that the complexity analysis involves empirical observation by execution of the code. I.e your code is run with a variety of different input sizes (usually large) to estimate the complexity, meaning it is slow and can be incorrect. The complexity analysis is automatically performed for you in the background every so often, so clicking on the Display Complexity Analysis Results option will display the most recent results if these are available. If the results do not seem to be updating, first wait 5 minutes with the IDE open, then reopen the complexity analysis results, and then try closing the IDE and reopening if this doesn't work. When we click on the option and complexity results are available, we see the following window: <br /><img src="complexity1.png" alt="An example complexity analysis screen which you can get to by pressing the Display Complexity Analysis Results option in the Unit Test menu."/><br />As you can see, an estimated time complexity in big O notation is provided for each function which had unit tests and types.</li></ul></li>
+			</ol>
 		
-		<h2>Frequently Asked Questions (FAQs)</h2>
-		<ul>
-			<li class="FAQ">Is the program portable (as in can you run it on different OSes)?</li>
-			<p>Yes. You should be able to run the program on different OSes, but you will need to compile it for the OS you want to use it for. The program is written in Python with the cross-platform PyQt windowing system, and compiled with Pyinstaller. Visit the program's <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a> to download the source code and compile it for a different OS using PyInstaller</p>
-			<li class="FAQ">Is the program portable (as in can you run it from a USB stick)?</li>
-			<p>Yes, it should be. The program has some dependencies so you should make sure to copy the whole program directory and not just the exe file onto the USB. If any aspects of the program are not working on the USB stick, please open an issue on the program's <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a>.</p>
-			<li class="FAQ">Can the program be run from the command line?</li>
-			<p>Yes, although the accepted arguments are quite basic. Either run the executeable on its own from the command line to execute the IDE as normal, or put the path of the mlideproj file you want to open with the IDE as the first and only argument</p>
-			<li class="FAQ">Can I change the suggestions made on my code e.g. to remove some triggers or add my own?</li>
-			<p>Yes - simply edit the Syntax_Rules.txt file distributed with the program. The format of this is as follows: Each line has a regex, without flags detailing what to match, followed by ;; and the suggestion text. #To comment out a line (stop it from being processed, as in Python)</p>
-			<li class="FAQ">Is the program open-source?</li>
-			<p>Yes. Please see the <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository.</a></p>
-			<li class="FAQ">Why doesn't it work? GRRRRRR?</li>
-			<p>Please see the below list of troubleshooting fixes. Note that the program is only fully tested to work on Windows, so you may experience problems on other OSes, although it should work. If your problem is not listed below, open an issue on the program's <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a></p>
-			<table><tr><th>Problem</th><th>Suggested solution</th></tr>
-			<tr><td>The unit tests are failing despite the function being correct</td><td>Make sure that the function is defined inside a file which contains no other print statements accessible from the external scope, and that the function itself contains no additional print statements. When the tests are run, the file is imported into a temporary script which runs the function. This import will execute any code outside of the functions (in global scope) in the file, which could lead to output.</td></tr>
-			<tr><td>The run file and unit test functionality is not working</td><td>This may be due to python being installed under a different command name than expected on your system. The IDE relies on an existing installation of python on your computer in order to work. It assumes that on Windows the command to run python is py and on Linux that it is python3, but this may not be the case, especially if you have a different python installation to CPython. Open the settings and enter the command that you use to run python at the terminal</td></tr>
-			<tr><td>The unit test has an error when I haven't even written the function yet!</td><td>This is normal behaviour. An error is created when the IDE tries to run the function named in the unit test when it's not yet defined. However, this is useful as it reminds you to make the function!</tr>
-			<tr><td>I copied a project from my friend's computer and it won't open on mine</td><td>Open the mlideproj file in another text editor e.g. notepad and check that the filepaths are correct for your system.</td></tr>
-			<tr><td>When I double click on a mlideproj file it doesn't open with the IDE</td><td>On windows you can select open with, more apps, look for another app on this PC, then find the MLIDE executable. You should then be able to double click on mlideproj files and have them open in the MLIDE. To open them with a different program e.g. for troubleshooting, you can do the same thing again.</td></tr>
-			<tr><td>The program is hanging/not responding when I try to run unit tests</td><td>You must avoid putting any input() commands inside a function to be unit tested. Instead, all data must be passed in via arguments, because user input is not a feature of the unit test interface. Close the IDE and reopen it. If it crashes again, use a different text editor to edit the offending python file to comment out any input statements before reopening.</td></tr>
+			<h2>Skill levels</h2>
+			<p>Your skill level is determined by a Machine Learning algorithm running on the code you write every day. It can take one of five values. Each of these values has its own avatar, which is displayed in the load screen.</p>
+			<p>As alluded to above, the skill level is linked to the resources displayed when you click "Learn something new" in the load screen. The resources shown come from the programming website <a href="https://www.geeksforgeeks.org/">GeeksForGeeks</a>. Each skill level in this program is matched to one level of GeeksForGeeks resource, so you should get something that's just the right level for you:</p>
+			<table> <!--Maps user skill levels to G4G resource levels-->
+				<tr><th>Avatar</th><th>MLIDE User Skill Level</th><th>GeeksForGeeks Article Difficulty Level</th></tr>
+				<tr><td><img src="Novice.png" height="64" width="64" alt="Novice avatar"/></td><td>Novice</td><td>Basic</td></tr>
+				<tr><td><img src="Student.png" height="64" width="64" alt="Student avatar"/></td><td>Student</td><td>Easy</td></tr>
+				<tr><td><img src="Adept.png" height="64" width="64" alt="Adept avatar"/></td><td>Adept</td><td>Medium</td></tr>
+				<tr><td><img src="Veteran.png" height="64" width="64" alt="Veteran avatar"/></td><td>Veteran</td><td>Hard</td></tr>
+				<tr><td><img src="Master.png" height="64" width="64" alt="Master avatar"/></td><td>Master</td><td>Expert</td></tr>
 			</table>
-		</ul>
 
-		<h2>List of keyboard shortcuts</h2>
-		<table>
-		<tr><th>Shortcut</th><th>Action</th></tr>
-		<tr><td>Ctrl-W</td><td>Close window</td></tr>
-		<tr><td>Ctrl-Return/Ctrl-Enter</td><td>Send input to code</td></tr>
-		<tr><td>Ctrl-R</td><td>Focus run command box</td></tr>
-		<tr><td>Ctrl-I</td><td>Focus shell input box</td></tr>
-		<tr><td>Ctrl-F/Ctrl-G/Ctrl-H</td><td>Find/Replace</td></tr>
-		<tr><td>Ctrl-O</td><td>In load screen: open existing project<br />In main IDE: Add file on disk to current project.</td></tr>
-		<tr><td>Ctrl-N</td><td>In load screen: create new project<br />In main IDE: Add a new file to the current project.</td></tr>
-		<tr><td>Ctrl-L</td><td>In load screen: learn something new (open resource)</td></tr>
-		<tr><td>Ctrl-S</td><td>Save project</td></tr>
-		<tr><td>Ctrl-Shift-O</td><td>In main IDE: Open project</td></tr>
-		<tr><td>Ctrl-Shift-N</td><td>In main IDE: New project</td></tr>
-		<tr><td>Ctrl-C</td><td>Copy</td></tr>
-		<tr><td>Ctrl-V</td><td>Paste</td></tr>
-		<tr><td>F6</td><td>Format code (correct indentation - not 100% accurate!)</td></tr>
-		<tr><td>F5</td><td>Execute project</td></tr>
-		<tr><td>Ctrl-T</td><td>Enter Unit Tests</td></tr>
-		<tr><td>Ctrl-F5</td><td>Display Unit Test Results</td></tr>
-		<tr><td>Ctrl-Shift-C</td><td>Display Complexity Analyser Results</td></tr>
-		<tr><td>F11</td><td>Open settings</td></tr>
-		<tr><td>F12</td><td>Show tutorial - this one you're reading now! :)</td></tr>
-		</table>
-		<br>
-		NB: As the program is open source, you can add any additional shortcuts as you wish, and compile a custom version of the program, or commit changes upstream with a pull request to the <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a>.
+			<h2>Code Scores</h2>
+			The code scores displayed in the Hexagons reflect how good the program thinks your code is. They are from 0-10 to 2sf, but note that it isn't always possible to achieve maximum score for certain tasks. The scores are generated in the following way:
+			<ul>
+				<li>Efficacy Scores: The score is the percentage of the entered unit tests that your code is currently passing, scaled to be out of ten</li>
+				<li>Elegance Scores: The score is a combination of the readability score, the number of available elegance suggestions (comments) which the user has not yet taken on board or rejected as wrong, repetition and length of code</li>
+				<li>Readability Scores: The score is determined by a machine learning algorithm trained on the Dorn dataset</li>
+				<li>Efficiency Scores: The score is a simple transformation of the average complexity of subroutines in your project, so that the more efficient your subroutines are on average (by complexity estimation), the higher the score. Of course some tasks cannot be achieved in certain complexities (e.g. comparison sorts are limited to O(nlog(n))), so this may be less beneficial than the other scores.</li>
+			</ul>
+			Remember that any of these can be turned off by a simple left click on the corresponding hexagon at any point. This allows you to focus on what matters to you for a given coding project.
+			
+			<h2>Frequently Asked Questions (FAQs)</h2>
+			<ul>
+				<li class="FAQ">Is the program portable (as in can you run it on different OSes)?</li>
+				<p>Yes. You should be able to run the program on different OSes, but you will need to compile it for the OS you want to use it for. The program is written in Python with the cross-platform PyQt windowing system, and compiled with Pyinstaller. Visit the program's <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a> to download the source code and compile it for a different OS using PyInstaller</p>
+				<li class="FAQ">Is the program portable (as in can you run it from a USB stick)?</li>
+				<p>Yes, it should be. The program has some dependencies so you should make sure to copy the whole program directory and not just the exe file onto the USB. If any aspects of the program are not working on the USB stick, please open an issue on the program's <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a>.</p>
+				<li class="FAQ">Can the program be run from the command line?</li>
+				<p>Yes, although the accepted arguments are quite basic. Either run the executeable on its own from the command line to execute the IDE as normal, or put the path of the mlideproj file you want to open with the IDE as the first and only argument</p>
+				<li class="FAQ">Can I change the suggestions made on my code e.g. to remove some triggers or add my own?</li>
+				<p>Yes - simply edit the Syntax_Rules.txt file distributed with the program. The format of this is as follows: Each line has a regex, without flags detailing what to match, followed by ;; and the suggestion text. #To comment out a line (stop it from being processed, as in Python)</p>
+				<li class="FAQ">Is the program open-source?</li>
+				<p>Yes. Please see the <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository.</a></p>
+				<li class="FAQ">Why doesn't it work? GRRRRRR?</li>
+				<p>Please see the below list of troubleshooting fixes. Note that the program is only fully tested to work on Windows, so you may experience problems on other OSes, although it should work. If your problem is not listed below, open an issue on the program's <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a></p>
+				<table><tr><th>Problem</th><th>Suggested solution</th></tr>
+				<tr><td>The unit tests are failing despite the function being correct</td><td>Make sure that the function is defined inside a file which contains no other print statements accessible from the external scope, and that the function itself contains no additional print statements. When the tests are run, the file is imported into a temporary script which runs the function. This import will execute any code outside of the functions (in global scope) in the file, which could lead to output.</td></tr>
+				<tr><td>The run file and unit test functionality is not working</td><td>This may be due to python being installed under a different command name than expected on your system. The IDE relies on an existing installation of python on your computer in order to work. It assumes that on Windows the command to run python is py and on Linux that it is python3, but this may not be the case, especially if you have a different python installation to CPython. Open the settings and enter the command that you use to run python at the terminal</td></tr>
+				<tr><td>The unit test has an error when I haven't even written the function yet!</td><td>This is normal behaviour. An error is created when the IDE tries to run the function named in the unit test when it's not yet defined. However, this is useful as it reminds you to make the function!</tr>
+				<tr><td>I copied a project from my friend's computer and it won't open on mine</td><td>Open the mlideproj file in another text editor e.g. notepad and check that the filepaths are correct for your system.</td></tr>
+				<tr><td>When I double click on a mlideproj file it doesn't open with the IDE</td><td>On windows you can select open with, more apps, look for another app on this PC, then find the MLIDE executable. You should then be able to double click on mlideproj files and have them open in the MLIDE. To open them with a different program e.g. for troubleshooting, you can do the same thing again.</td></tr>
+				<tr><td>The program is hanging/not responding when I try to run unit tests</td><td>You must avoid putting any input() commands inside a function to be unit tested. Instead, all data must be passed in via arguments, because user input is not a feature of the unit test interface. Close the IDE and reopen it. If it crashes again, use a different text editor to edit the offending python file to comment out any input statements before reopening.</td></tr>
+				</table>
+			</ul>
+
+			<h2>List of keyboard shortcuts</h2>
+			<table>
+			<tr><th>Shortcut</th><th>Action</th></tr>
+			<tr><td>Ctrl-W</td><td>Close window</td></tr>
+			<tr><td>Ctrl-Return/Ctrl-Enter</td><td>Send input to code</td></tr>
+			<tr><td>Ctrl-R</td><td>Focus run command box</td></tr>
+			<tr><td>Ctrl-I</td><td>Focus shell input box</td></tr>
+			<tr><td>Ctrl-F/Ctrl-G/Ctrl-H</td><td>Find/Replace</td></tr>
+			<tr><td>Ctrl-O</td><td>In load screen: open existing project<br />In main IDE: Add file on disk to current project.</td></tr>
+			<tr><td>Ctrl-N</td><td>In load screen: create new project<br />In main IDE: Add a new file to the current project.</td></tr>
+			<tr><td>Ctrl-L</td><td>In load screen: learn something new (open resource)</td></tr>
+			<tr><td>Ctrl-S</td><td>Save project</td></tr>
+			<tr><td>Ctrl-Shift-O</td><td>In main IDE: Open project</td></tr>
+			<tr><td>Ctrl-Shift-N</td><td>In main IDE: New project</td></tr>
+			<tr><td>Ctrl-C</td><td>Copy</td></tr>
+			<tr><td>Ctrl-V</td><td>Paste</td></tr>
+			<tr><td>F6</td><td>Format code (correct indentation - not 100% accurate!)</td></tr>
+			<tr><td>F5</td><td>Execute project</td></tr>
+			<tr><td>Ctrl-T</td><td>Enter Unit Tests</td></tr>
+			<tr><td>Ctrl-F5</td><td>Display Unit Test Results</td></tr>
+			<tr><td>Ctrl-Shift-C</td><td>Display Complexity Analyser Results</td></tr>
+			<tr><td>F11</td><td>Open settings</td></tr>
+			<tr><td>F12</td><td>Show tutorial - this one you're reading now! :)</td></tr>
+			</table>
+			<br>
+			NB: As the program is open source, you can add any additional shortcuts as you wish, and compile a custom version of the program, or commit changes upstream with a pull request to the <a href="https://github.com/starswap/MLProgrammingIDE">GitHub repository</a>.
 		</div>
+
+		<!--Explain the context of the project's creation-->
 		<footer>Hamish Starling 2021 - Made as an OCR A Level Computer Science NEA project.</footer>
 
 	</body>
-
-
 </html>
