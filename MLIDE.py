@@ -439,6 +439,19 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def createCurrentProjectByOpening(self):
                 mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
                 try:
+                        f = open(mlideproj,"r")
+                        content = f.read()
+                        js = json.loads(content)
+                        f.close()
+                        if js["directoryPath"] != os.path.split(mlideproj)[0]: #User has moved project directory from somewhere else so we need to updateit.
+                                f = open(mlideproj,"w")
+                                print(repr(js["directoryPath"])[1:-1])
+                                updated = content.replace(repr(js["directoryPath"])[1:-1],repr(os.path.split(mlideproj)[0])[1:-1])
+                                #print(updated)
+                                f.write(updated)
+                                f.close()
+                                        
+                                        
                         self.currentProject = Project(mlideproj,True,self)
                         self.setUpActions()
                 except FileNotFoundError:
