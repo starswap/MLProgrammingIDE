@@ -332,7 +332,16 @@ class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
 
 		
 
-
+def getCWD():
+        #Source: https://www.codegrepper.com/code-examples/python/python+pyinstaller+get+path+of+executable
+        # determine if the application is a frozen `.exe` (e.g. pyinstaller --onefile) 
+        if getattr(sys, 'frozen', False):
+                application_path = os.path.dirname(sys.executable)
+        # or a script file (e.g. `.py` / `.pyw`)
+        elif __file__:
+                application_path = os.path.dirname(__file__)
+        return application_path
+		
 
 
 #Implemented with help from https://stackoverflow.com/questions/54081118/pop-up-window-or-multiple-windows-with-pyqt5-qtdesigner/54081597
@@ -343,7 +352,8 @@ class Settings(PyQt5.QtWidgets.QDialog):
 		self.ui.setupUi(self)
 		self.ui.closeButton.clicked.connect(self.close)
 		self.settings = {}
-		
+
+
 		
 		#Defaults:
 		if sys.platform == "win32" or sys.platform == "cygwin":
@@ -352,10 +362,10 @@ class Settings(PyQt5.QtWidgets.QDialog):
 			self.settings["pythonCommand"] = "python3"		
 		
 		try:
-			f = open(os.path.join(str(Path.home()),".mlidesettings"),"r")
+			f = open(os.path.join(str(getCWD()),".mlidesettings"),"r")
 			self.settings = json.loads(f.read())
 			f.close()
-		except json.decoder.JSONDecodeError as e:
+		except (json.decoder.JSONDecodeError,FileNotFoundError) as e:
                         print(e)
                         pass #No settings file
 		print(self.settings)
@@ -364,7 +374,7 @@ class Settings(PyQt5.QtWidgets.QDialog):
 
 		self.save()
 	def save(self):
-		f = open(os.path.join(str(Path.home()),".mlidesettings"),"w")
+		f = open(os.path.join(str(getCWD()),".mlidesettings"),"w")
 		f.write(json.dumps(self.settings))
 		f.close()
 	def closeEvent(self, event):
