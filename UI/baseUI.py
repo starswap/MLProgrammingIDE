@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'version2.ui'
+# Form implementation generated from reading ui file 'version3.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -81,7 +81,7 @@ class Ui_MainWindow(object):
         self.inputButton.setObjectName("inputButton")
         self.gridLayout_2.addWidget(self.inputButton, 1, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_2, 3, 3, 1, 1)
-        self.activeFileTextbox = QtWidgets.QTextEdit(self.centralwidget)
+        self.activeFileTextbox = codeEditor(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(4)
@@ -1466,5 +1466,6 @@ class Ui_MainWindow(object):
         self.actionOpen_Settings.setShortcut(_translate("MainWindow", "F11"))
         self.actionDisplay_Complexity_Analyser_Results.setText(_translate("MainWindow", "Display Complexity Analyser Results"))
         self.actionDisplay_Complexity_Analyser_Results.setShortcut(_translate("MainWindow", "Ctrl+Shift+C"))
+from CodeFeatures import codeEditor
 from Objects.HexagonObject import EfficacyHexagon, EfficiencyHexagon, EleganceHexagon, ReadabilityHexagon
 import levels_rc

@@ -512,7 +512,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			print("newline")
 		
 		self.suggestSyntaxFeatures(self.activeFileTextbox.toPlainText())
-		
+		self.activeFileTextbox.showCompleter()
 
 	def showUnitTestEntry(self):
 		self.enterUnitTests.show()
@@ -1026,6 +1026,7 @@ if len(sys.argv) == 2: #When the user double clicks on an mlideproj file in wind
 else:
 	Load_Screen = LoadScreen(IDE_Window)
 	Load_Screen.show()
+app.setStyle("fusion") #turn on modern design.
 app.exec_()
 
 """		

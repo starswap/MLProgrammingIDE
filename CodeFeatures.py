@@ -178,3 +178,58 @@ def formatCode(code):
 		
 	return outputText #The result of this function (the returned outputText value) is then put into the active file textbox to replace the existing unformatted code
 
+
+#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
+class codeEditor(PyQt5.QtWidgets.QTextEdit):
+	def __init__(self,parent):
+		super().__init__(parent)
+		self.show() #Make it visible
+		self.prepareCompleter()
+		
+	def prepareCompleter(self):
+		self.completer = PyQt5.QtWidgets.QCompleter(["apple","orange","pear","grape"],self)
+		self.completer.setWidget(self)
+		self.completer.setCompletionMode(PyQt5.QtWidgets.QCompleter.PopupCompletion)
+		self.completer.popup().setStyleSheet("""
+                QListView::item {
+                        background-color:red;
+                }
+                QListView {
+                        background-color:#f8f5dc;
+                }
+                QListView::item:focus {
+                        background-color:#ffd966;
+                }
+                QListView::item:alternate {
+                        background-color:blue;
+                }          
+
+                QListView::item:hover {
+                        background-color:#ffd966;
+                }                
+""")
+		self.completer.popup().setStyleSheet(self.completer.popup().styleSheet())
+
+	def showCompleter(self):
+		self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0))
+		rectangle = self.cursorRect()
+		rectangle.setWidth(self.completer.popup().sizeHintForColumn(0)*4 + self.completer.popup().verticalScrollBar().sizeHint().width())
+		print("here")
+		self.completer.complete(rectangle)
+
+
+"""
+activeFileTextbox.onChangeContent = DisplayAutocompleteSuggestions(activeFileTextbox.getLines()[activeFileTextbox.getCurrentLineIndex()])
+procedure DisplayAutocompleteSuggestions(currentLine)
+     endsOfLine = SuggestAutocomplete(currentLine)
+     for i = 0 to length(endsOfLine) - 1
+          endsOfLine[i] = currentLine + endsOfLine[i]
+     endfor
+     activeFileTextbox.autocompleteObject.setCompleterModel(endsOfLine)
+endprocedure
+
+//These completions will be dealt with by another piece of code, namely:
+activeFileTextbox.autocompleteObject.onChooseOption(optionText) = procedure(optionText) :
+    activeFileTextbox.setLine(activeFileTextbox.getCurrentLineIndex(),optionText)
+endprocedure
+"""
