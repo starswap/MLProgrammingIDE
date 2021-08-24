@@ -444,8 +444,10 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.unwantedSuggestions = []
 		self.userProficiencyLevelLabel.setText("Skill Level = "+ self.settings.settings["userProf"])
 
-                #Show the tutorial when the tutorial menu action is chosen
+		#Show the tutorial when the tutorial menu action is chosen
 		self.actionShow_Tutorial.triggered.connect(self.showTutorial)
+		self.activeFileTextbox.lineNumberBox = self.lineNumberBox
+		
 	def createCurrentProjectByOpening(self):
                 mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
                 try:
@@ -512,7 +514,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			print("newline")
 		
 		self.suggestSyntaxFeatures(self.activeFileTextbox.toPlainText())
-		self.activeFileTextbox.showCompleter()
+		self.activeFileTextbox.displayAutocompleteSuggestions()
 
 	def showUnitTestEntry(self):
 		self.enterUnitTests.show()
@@ -532,12 +534,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		In Qt an event filter is an object which is allowed to receive events on behalf of another object before that object gets to see them. We set this class to be a filter for the active file textbox so that it can inspect keys pressed therein. We check for return/enter presses which require the calling of the OnNewline subroutine from the CodeFeatures file. 
 		eventFilter is a special function name which is automatically called by Qt when events are produced 
 		"""
-		if event.type() == PyQt5.QtCore.QEvent.KeyPress and obj is self.activeFileTextbox: #If we got a keypressevent from the active file textbox
-			if ((event.key() == PyQt5.QtCore.Qt.Key_Return) or (event.key() == PyQt5.QtCore.Qt.Key_Enter)) and self.activeFileTextbox.hasFocus(): #and the key pressed was either return (normal text enter key) or enter (on the number pad)
-				CodeFeatures.onNewline(self.activeFileTextbox,self.lineNumberBox) #Call the subroutine that updates the line numbers and the indentation
-				return True #The filtering was successful
-				
-		elif event.type() == PyQt5.QtCore.QEvent.KeyPress and obj is self.findReplaceDialogue.findBox:
+		if event.type() == PyQt5.QtCore.QEvent.KeyPress and obj is self.findReplaceDialogue.findBox:
 			if ((event.key() == PyQt5.QtCore.Qt.Key_Return) or (event.key() == PyQt5.QtCore.Qt.Key_Enter)) and self.findReplaceDialogue.findBox.hasFocus(): 
 				self.findReplaceDialogue.find()
 				return True	
@@ -582,7 +579,6 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		self.enterUnitTests.showExistingTests()
 		
-		self.activeFileTextbox.installEventFilter(self) #Allows this object to process events for the activeFileTextbox, meaning it can intercept certain keypresses needed to trigger subroutines.
 		self.findReplaceDialogue.findBox.installEventFilter(self) #Allows this object to process events for the findReplaceDialogue, meaning it can intercept certain keypresses needed to trigger subroutines.
 	
 		self.actionFind_Replace.triggered.connect(self.toggleFindReplace)		

@@ -1,6 +1,7 @@
 import PyQt5
 import re
 import math
+import MachineLearning.autocomplete
 class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 	"""Performs syntax highlighting on the text typed in the active file textbox. Subclass of QSyntaxsHighlighter, which performs all the styling using the predefined method setFormat(start,length,format). We override highlightBlock which is called automatically by Qt, to add our own styling rules"""
 	def __init__(self,associatedTextEdit):
@@ -181,55 +182,83 @@ def formatCode(code):
 
 #Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
 class codeEditor(PyQt5.QtWidgets.QTextEdit):
+        """Subclasses QTextEdit to provide code editor functionality for use in my IDE. Notably, tab autocomplete is handled correctly"""
 	def __init__(self,parent):
-		super().__init__(parent)
+                """Constructor for the codeEditor class"""
+		super().__init__(parent) #Superclass constructor to initialise a QTextEdit widget
 		self.show() #Make it visible
-		self.prepareCompleter()
+		
+		self.prepareCompleter() #Setup the code autocompleter
+		self.completerActive = True #By default completions are in use
 		
 	def prepareCompleter(self):
-		self.completer = PyQt5.QtWidgets.QCompleter(["apple","orange","pear","grape"],self)
-		self.completer.setWidget(self)
-		self.completer.setCompletionMode(PyQt5.QtWidgets.QCompleter.PopupCompletion)
+                """Initialises the code autocompletion functionality by creating a Qcompleter object and styling it correctly"""
+		self.completer = PyQt5.QtWidgets.QCompleter(self)
+		self.completer.setWidget(self) #Tells the QCompleter it is providing completions on the codeEditor widget (activeFileTextbox)
+		self.completer.setCompletionMode(PyQt5.QtWidgets.QCompleter.PopupCompletion) #Tell is to show completion options as a popup next to the text typed by the user
+
+                #Colour it purple and make the font size and style the same as the rest of the text in the activeFileTextbox
 		self.completer.popup().setStyleSheet("""
-                QListView::item {
-                        background-color:red;
-                }
-                QListView {
-                        background-color:#f8f5dc;
-                }
-                QListView::item:focus {
-                        background-color:#ffd966;
-                }
-                QListView::item:alternate {
-                        background-color:blue;
-                }          
-
-                QListView::item:hover {
-                        background-color:#ffd966;
-                }                
+		QListView {
+			background-color:purple;
+			color: white;
+			font-size: 11pt;
+			font-family:calibri,Ubuntu,sans-serif;
+		}
 """)
-		self.completer.popup().setStyleSheet(self.completer.popup().styleSheet())
+		self.completer.activated.connect(self.fillInCompletion) #When the user selects a completion, we should call this method
+		self.completerActive = True
+		
+	def displayAutocompleteSuggestions(self):#Needed as otherwise spams completions. #Include as verrsion
+                """Gets the autocomplete suggestions from the machine learning algorithm that produces them and displays them in the completer"""
+		if self.completerActive: #Only if the completer is active should we display suggestions
+			currentLineText = self.textCursor().block().text() #Get text of current line where cursor is positioned
 
-	def showCompleter(self):
-		self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0))
-		rectangle = self.cursorRect()
-		rectangle.setWidth(self.completer.popup().sizeHintForColumn(0)*4 + self.completer.popup().verticalScrollBar().sizeHint().width())
-		print("here")
-		self.completer.complete(rectangle)
+			#Get suggestions and set model with the completions and the current text put together
+			self.completer.setModel(PyQt5.QtCore.QStringListModel([currentLineText + sug for sug in MachineLearning.autocomplete.suggestAutocomplete(currentLineText)]))
+			self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0)) #Start selecting at top
 
+			#Get where the cursor is and make the completer display in the correct place
+			#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
+			rectangle = self.cursorRect()
+			rectangle.setWidth(self.completer.popup().sizeHintForColumn(0)*4 + self.completer.popup().verticalScrollBar().sizeHint().width())
+			self.completer.complete(rectangle)
 
-"""
-activeFileTextbox.onChangeContent = DisplayAutocompleteSuggestions(activeFileTextbox.getLines()[activeFileTextbox.getCurrentLineIndex()])
-procedure DisplayAutocompleteSuggestions(currentLine)
-     endsOfLine = SuggestAutocomplete(currentLine)
-     for i = 0 to length(endsOfLine) - 1
-          endsOfLine[i] = currentLine + endsOfLine[i]
-     endfor
-     activeFileTextbox.autocompleteObject.setCompleterModel(endsOfLine)
-endprocedure
+	def fillInCompletion(self,textToComplete):
+                """When the user selects a completion, we will fill it in so that the code in the IDE changes to that"""
 
-//These completions will be dealt with by another piece of code, namely:
-activeFileTextbox.autocompleteObject.onChooseOption(optionText) = procedure(optionText) :
-    activeFileTextbox.setLine(activeFileTextbox.getCurrentLineIndex(),optionText)
-endprocedure
-"""
+                #Remove the existing data before replacing it with the completed data
+		cursor = self.textCursor();
+		cursor.select(PyQt5.QtGui.QTextCursor.LineUnderCursor) #could change to Word
+		cursor.removeSelectedText()
+		cursor.insertText(textToComplete)
+		self.setTextCursor(cursor)
+		
+	def keyPressEvent(self,event):#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
+                """Called by Qt when a key is pressed on a codeEditor object"""
+
+		if (self.completer.popup().isVisible()): #a completion is available
+			if event.key() == PyQt5.QtCore.Qt.Key_Tab: #Let the Qcompleter object deal with tab presses
+				event.ignore()
+				return
+			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #Let the Qcompleter object deal with return/enter presses...
+                                        #...but make sure to deactivate the completer so that we don't get multiple completions on the same line
+					self.completer.popup().hide()
+					self.completerActive = False
+					event.ignore()
+					return  
+			if event.key() == PyQt5.QtCore.Qt.Key_Escape: #Let the Qcompleter object deal with escape presses
+				event.ignore()
+				return
+		else: #no completions are shown
+			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #enter/return pressed
+                                #reactivate the completer for the new line
+				self.completerActive = True
+				self.completer.popup().show()
+				#update line numbers box and indentation
+				onNewline(self,self.lineNumberBox)
+				#the event has been processed so no-one else needs to process it
+				event.accept()
+			else: #another unrecognised key was pressed
+				super().keyPressEvent(event) #we can leave the handling of this to the QTextEdit class.
+				
