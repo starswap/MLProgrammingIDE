@@ -6,4 +6,7 @@
     <file>Master.png</file>
     <file>Novice.png</file>
   </qresource>
+  <qresource prefix="mainIcon">
+    <file>MuLambdaIcon.png</file>
+  </qresource>
 </RCC>

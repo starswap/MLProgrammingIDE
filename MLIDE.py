@@ -420,7 +420,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			color: white;
 		}""")
 							
-		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
+		icon = PyQt5.QtGui.QIcon(":/mainIcon/MuLambdaIcon.png")
 		self.setWindowIcon(icon)		
 	
 		#Prepare popups
@@ -767,7 +767,7 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 	def __init__(self, IDEWindow, parent=None):
 		super(LoadScreen, self).__init__(parent)
 		self.setupUi(self)
-		icon = PyQt5.QtGui.QIcon("./MlIcon.png")
+		icon = PyQt5.QtGui.QIcon(":/mainIcon/MuLambdaIcon.png")
 		self.setWindowIcon(icon)	
 		self.setFixedSize(self.size())
 		self.IDEWindow = IDEWindow

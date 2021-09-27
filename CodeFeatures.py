@@ -129,7 +129,7 @@ def onNewline(activeFileBox,lineNumbersBox):
 		if char == "\t":
 			newTabs += 1
 		else:
-        		break #The first time a character we check is not a tab, we break out of the loop so that we only check for tabs at the front of the line and not elsewhere in the line
+			break #The first time a character we check is not a tab, we break out of the loop so that we only check for tabs at the front of the line and not elsewhere in the line
 
 	oldCurPos = activeFileBox.textCursor().position() #We need to save the position of the cursor as...
 	activeFileBox.setPlainText(activeFileBox.toPlainText()[:oldCurPos] + "\n"+ ("\t"*newTabs) +activeFileBox.toPlainText()[oldCurPos:]) #... when we update the contents of the active file textbox by replacing the existing text with a new text containing the added tabs, we lose the position of the cursor, which just moves to the top of the file.
@@ -182,9 +182,9 @@ def formatCode(code):
 
 #Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
 class codeEditor(PyQt5.QtWidgets.QTextEdit):
-        """Subclasses QTextEdit to provide code editor functionality for use in my IDE. Notably, tab autocomplete is handled correctly"""
+	"""Subclasses QTextEdit to provide code editor functionality for use in my IDE. Notably, tab autocomplete is handled correctly"""
 	def __init__(self,parent):
-                """Constructor for the codeEditor class"""
+		"""Constructor for the codeEditor class"""
 		super().__init__(parent) #Superclass constructor to initialise a QTextEdit widget
 		self.show() #Make it visible
 		
@@ -192,12 +192,12 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		self.completerActive = True #By default completions are in use
 		
 	def prepareCompleter(self):
-                """Initialises the code autocompletion functionality by creating a Qcompleter object and styling it correctly"""
+		"""Initialises the code autocompletion functionality by creating a Qcompleter object and styling it correctly"""
 		self.completer = PyQt5.QtWidgets.QCompleter(self)
 		self.completer.setWidget(self) #Tells the QCompleter it is providing completions on the codeEditor widget (activeFileTextbox)
 		self.completer.setCompletionMode(PyQt5.QtWidgets.QCompleter.PopupCompletion) #Tell is to show completion options as a popup next to the text typed by the user
 
-                #Colour it purple and make the font size and style the same as the rest of the text in the activeFileTextbox
+		#Colour it purple and make the font size and style the same as the rest of the text in the activeFileTextbox
 		self.completer.popup().setStyleSheet("""
 		QListView {
 			background-color:purple;
@@ -210,7 +210,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		self.completerActive = True
 		
 	def displayAutocompleteSuggestions(self):#Needed as otherwise spams completions. #Include as verrsion
-                """Gets the autocomplete suggestions from the machine learning algorithm that produces them and displays them in the completer"""
+		"""Gets the autocomplete suggestions from the machine learning algorithm that produces them and displays them in the completer"""
 		if self.completerActive: #Only if the completer is active should we display suggestions
 			currentLineText = self.textCursor().block().text() #Get text of current line where cursor is positioned
 
@@ -225,9 +225,9 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 			self.completer.complete(rectangle)
 
 	def fillInCompletion(self,textToComplete):
-                """When the user selects a completion, we will fill it in so that the code in the IDE changes to that"""
+		"""When the user selects a completion, we will fill it in so that the code in the IDE changes to that"""
 
-                #Remove the existing data before replacing it with the completed data
+		#Remove the existing data before replacing it with the completed data
 		cursor = self.textCursor();
 		cursor.select(PyQt5.QtGui.QTextCursor.LineUnderCursor) #could change to Word
 		cursor.removeSelectedText()
@@ -235,14 +235,14 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		self.setTextCursor(cursor)
 		
 	def keyPressEvent(self,event):#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
-                """Called by Qt when a key is pressed on a codeEditor object"""
+		"""Called by Qt when a key is pressed on a codeEditor object"""
 
 		if (self.completer.popup().isVisible()): #a completion is available
 			if event.key() == PyQt5.QtCore.Qt.Key_Tab: #Let the Qcompleter object deal with tab presses
 				event.ignore()
 				return
 			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #Let the Qcompleter object deal with return/enter presses...
-                                        #...but make sure to deactivate the completer so that we don't get multiple completions on the same line
+					#...but make sure to deactivate the completer so that we don't get multiple completions on the same line
 					self.completer.popup().hide()
 					self.completerActive = False
 					event.ignore()
@@ -252,7 +252,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 				return
 		else: #no completions are shown
 			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #enter/return pressed
-                                #reactivate the completer for the new line
+				#reactivate the completer for the new line
 				self.completerActive = True
 				self.completer.popup().show()
 				#update line numbers box and indentation
