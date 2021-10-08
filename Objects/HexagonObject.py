@@ -1,6 +1,7 @@
 import PyQt5
 from to_precision import to_precision
 import random
+from MachineLearning import readability as rdb # getCodeReadabilityScore
 
 class Hexagon(PyQt5.QtWidgets.QWidget):
 	def __init__(self,parent,resourceURLs=[""],startScore=0):
@@ -114,19 +115,19 @@ class EfficiencyHexagon(Hexagon):
 		super().__init__(parent, resourceURLs=["https://www.bigocheatsheet.com/"]) #FUTURE RELEASE: We could have the hexagons generate these resources by themselves using additional learning algorithms
 		
 	def getScore(self,complexityStrings):
-                """Given the complexities of all of the user's functions, computes a rough score for these based on the premise that O(1) is really good and O(2^n) is very bad. Of course not all problems can be solved in all complexities but we neglect to consider that here as that would be quite difficult to implement"""
-                POSSIBLE_COMPLEXITIES = ["1","logn","n","nlogn","n^2","2^n"] #MAINTENANCE: If more complexities are added to the program, their strings should be added here, and their strings and functions in EstimateCodeComplexity. 
-                totalComplexityScore = 0
-                totalSubroutines = 0
-                
-                for result in complexityStrings: #For every complexity string e.g. "logn" from one of the user's functions,
-                        if result in POSSIBLE_COMPLEXITIES: #If we recognise it as a valid complexity
-                                totalComplexityScore = totalComplexityScore + (len(POSSIBLE_COMPLEXITIES)-1-POSSIBLE_COMPLEXITIES.index(result)) #The function scores 5 for O(1), 4 for O(logn) etc. down to 0 for O(2^n)
-                                totalSubroutines += 1          #We count the total number of subroutines we have scored so that we can average over them
-                if totalSubroutines > 0: #VALIDATION: If no subroutines to estimate the complexity of can't give a score as the following code would involve dividing by 0
-                        avg = totalComplexityScore/totalSubroutines #Get average subroutine complexity score
-                        self.score = 10*avg/(len(POSSIBLE_COMPLEXITIES)-1) #Was out of 5 so make out of ten
-                        super().getScore() #Call the superclass method we are extending so the calculated score is displayed (the superclass method contains the code common to all Hexagons which display in the same way)
+		"""Given the complexities of all of the user's functions, computes a rough score for these based on the premise that O(1) is really good and O(2^n) is very bad. Of course not all problems can be solved in all complexities but we neglect to consider that here as that would be quite difficult to implement"""
+		POSSIBLE_COMPLEXITIES = ["1","logn","n","nlogn","n^2","2^n"] #MAINTENANCE: If more complexities are added to the program, their strings should be added here, and their strings and functions in EstimateCodeComplexity. 
+		totalComplexityScore = 0
+		totalSubroutines = 0
+		
+		for result in complexityStrings: #For every complexity string e.g. "logn" from one of the user's functions,
+			if result in POSSIBLE_COMPLEXITIES: #If we recognise it as a valid complexity
+				totalComplexityScore = totalComplexityScore + (len(POSSIBLE_COMPLEXITIES)-1-POSSIBLE_COMPLEXITIES.index(result)) #The function scores 5 for O(1), 4 for O(logn) etc. down to 0 for O(2^n)
+				totalSubroutines += 1          #We count the total number of subroutines we have scored so that we can average over them
+		if totalSubroutines > 0: #VALIDATION: If no subroutines to estimate the complexity of can't give a score as the following code would involve dividing by 0
+			avg = totalComplexityScore/totalSubroutines #Get average subroutine complexity score
+			self.score = 10*avg/(len(POSSIBLE_COMPLEXITIES)-1) #Was out of 5 so make out of ten
+			super().getScore() #Call the superclass method we are extending so the calculated score is displayed (the superclass method contains the code common to all Hexagons which display in the same way)
 
 class EfficacyHexagon(Hexagon):
 	def __init__(self,parent):
@@ -154,14 +155,56 @@ class ReadabilityHexagon(Hexagon):
 	def __init__(self,parent):
 		super().__init__(parent,resourceURLs=["https://code.tutsplus.com/tutorials/top-15-best-practices-for-writing-super-readable-code--net-8118","https://dzone.com/articles/10-tips-how-to-improve-the-readability-of-your-sof","https://stackoverflow.com/questions/550861/improving-code-readability"])
 		
-	def getScore(self):
+	def getScore(self,currentProject):
+		"""Gets the readability score from the machine learning model for all python files in the user's current project and sets the current readability score to be an average"""
+		totalScore = 0 #Accumulator variable over all files
+		totalPythonFiles = 0
+		for i in range(0,len(currentProject.fileContents)): #Loop over all files in the current project
+			if currentProject.projectFiles[i].endswith(".py"): #Only consider python files
+				totalScore += rdb.getCodeReadabilityScore(rdb.extractCodeReadabilityFeatures(currentProject.fileContents[i])) #Accumulate ML-generated readability score on this file
+				totalPythonFiles += 1
+		totalPythonFiles = max(totalPythonFiles,1)
+		self.score = totalScore/totalPythonFiles #Average over all files in project
 		super().getScore()
 		
 class EleganceHexagon(Hexagon):
 	def __init__(self,parent):
 		super().__init__(parent,["https://levelup.gitconnected.com/write-elegant-python-code-with-these-10-tricks-43ae7b1aa481","EleganceTips.html","https://dev.solita.fi/2016/06/02/what-is-elegant-code.html"])
 		
-	def getScore(self):
-		super().getScore()
+	def getScore(self,numSyntaxFeatures,currentProject):
+		"""Calculate an elegance score for the user's project, based on how readable it is, how many suggestions to improve elegance have not been taken on board,
+		and also the amount of repetition in the code, as this reduces code elegance. This is averaged over the file length and over the whole project"""
+		#initialise accumulators and counters
 
+		totalScore = 0
+		totalPythonFiles = 0
+		
+		for i in range(len(currentProject.fileContents)): #For all files in the project
+			if currentProject.projectFiles[i].endswith(".py"): #only consider Python files
+				totalPythonFiles += 1 #count no. for later avergae
 
+				#compute level of repetition in file
+				totalOffsetRepetition = 0 #total no. of characters that are the same as a character later in the file
+				fileText = currentProject.fileContents[i]
+				for offset in range(1,len(fileText)):
+					for j in range(len(fileText)-offset): #prevent index error by only going up to the point that j+offset is in range
+						if fileText[j+offset] == fileText[j]: #repetition
+							totalOffsetRepetition += 1 #count
+				if len(fileText) == 0:
+					fileText = "a"
+				repScore = 10 - 10*(totalOffsetRepetition / len(fileText) / len(fileText)) #As we check for each offset and for each start point, the average
+				
+
+				#...should be over the square of the fileText length. Then multiply by 100 to get it rougly out of 10. Then we subtract from 10 as repetition
+				#...is bad not good
+				readScore = rdb.getCodeReadabilityScore(rdb.extractCodeReadabilityFeatures(fileText)) #Code readability typically affects elegance; reusable programming components :)
+				amountOfElegantFeatureImprovements = numSyntaxFeatures #Improvements can/can't be made based on the syntax feature suggestion
+				featureScore = 10 - amountOfElegantFeatureImprovements #the more unaccepted suggestions, the more we can improve ==> further from optimal
+
+				#Take average of the repetition score,
+				avg = (repScore+readScore+featureScore)/3
+				totalScore += avg #Add up scores for each Python file....
+
+		totalPythonFiles = max(totalPythonFiles,1)		
+		self.score = totalScore/totalPythonFiles #... and take the average over all Python files
+		super().getScore() #polymorphic - show to screen

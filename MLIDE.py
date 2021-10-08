@@ -590,8 +590,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		
 		#Get initial score values
 		self.EfficacyHexagon.getScore(self.currentProject)
-		self.EleganceHexagon.getScore()
-		self.ReadabilityHexagon.getScore()
+		self.EleganceHexagon.getScore(0,self.currentProject)
+		self.ReadabilityHexagon.getScore(self.currentProject)
 		
 		self.actionDisplay_Complexity_Analyser_Results.triggered.connect(self.displayComplexityResults)
 
@@ -1004,8 +1004,8 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 ##		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
 ##		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)
 ##		self.scoreComputeTimer.timeout.connect(lambda : self.EfficacyHexagon.getScore(self.currentProject))
-##		self.scoreComputeTimer.timeout.connect(self.EleganceHexagon.getScore)
-##		self.scoreComputeTimer.timeout.connect(self.ReadabilityHexagon.getScore)
+##		self.scoreComputeTimer.timeout.connect(lambda : self.EleganceHexagon.getScore(self.currentProject,len(self.comments)))
+##		self.scoreComputeTimer.timeout.connect(lambda : self.ReadabilityHexagon.getScore(self.currentProject))
 ##		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
 ##		
 		self.finished.emit()
