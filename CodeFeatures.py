@@ -190,6 +190,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		
 		self.prepareCompleter() #Setup the code autocompleter
 		self.completerActive = True #By default completions are in use
+
 		
 	def prepareCompleter(self):
 		"""Initialises the code autocompletion functionality by creating a Qcompleter object and styling it correctly"""
@@ -201,6 +202,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		self.completer.popup().setStyleSheet("""
 		QListView {
 			background-color:purple;
+			border-radius: 2px;
 			color: white;
 			font-size: 11pt;
 			font-family:calibri,Ubuntu,sans-serif;
@@ -209,7 +211,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		self.completer.activated.connect(self.fillInCompletion) #When the user selects a completion, we should call this method
 		self.completerActive = True
 		
-	def displayAutocompleteSuggestions(self):#Needed as otherwise spams completions. #Include as verrsion
+	def displayAutocompleteSuggestions(self):#Needed as otherwise spams completions. #Include as version
 		"""Gets the autocomplete suggestions from the machine learning algorithm that produces them and displays them in the completer"""
 		if self.completerActive: #Only if the completer is active should we display suggestions
 			currentLineText = self.textCursor().block().text() #Get text of current line where cursor is positioned
@@ -217,7 +219,8 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 			#Get suggestions and set model with the completions and the current text put together
 			self.completer.setModel(PyQt5.QtCore.QStringListModel([currentLineText + sug for sug in MachineLearning.autocomplete.suggestAutocomplete(currentLineText)]))
 			self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0)) #Start selecting at top
-
+			self.completer.popup().setFocusPolicy(PyQt5.QtCore.Qt.NoFocus)
+                        
 			#Get where the cursor is and make the completer display in the correct place
 			#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
 			rectangle = self.cursorRect()
@@ -250,6 +253,10 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 			if event.key() == PyQt5.QtCore.Qt.Key_Escape: #Let the Qcompleter object deal with escape presses
 				event.ignore()
 				return
+
+			else: #another unrecognised key was pressed
+				super().keyPressEvent(event) #we can leave the handling of this to the QTextEdit class.
+				
 		else: #no completions are shown
 			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #enter/return pressed
 				#reactivate the completer for the new line
