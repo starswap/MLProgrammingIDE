@@ -944,6 +944,8 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 			code = fileContents[fileIndex] #Get the code of the file containing the function
 			
 			match = re.match("def +(.+):\n[\t ]*\"\"\"(.+)\"\"\"\n",code) #Get the function's docstring in the second capture group
+			if not(match):
+				continue
 			docstring = match.group(2)
 
 			#Search for a better complexity for a function with the same purpose/docstring

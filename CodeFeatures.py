@@ -101,7 +101,6 @@ class PythonSyntaxHighlighter(PyQt5.QtGui.QSyntaxHighlighter):
 		if self.currentBlockState() == 1:
 			self.setFormat(tripleQComment[-1],len(lineToHighlight)-tripleQComment[-1]+3,formatToUse)	
 
-
 def onNewline(activeFileBox,lineNumbersBox):
 	"""Runs every time the user presses the return or enter key inside the active file textbox. Does two things:
 		1. Indents the new line so that the indentation matches the previous line, reduced if there was a return on the previous line and increased if there was a colon
@@ -190,6 +189,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		
 		self.prepareCompleter() #Setup the code autocompleter
 		self.completerActive = True #By default completions are in use
+		self.currentTabs = 0
 
 		
 	def prepareCompleter(self):
@@ -201,9 +201,10 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		#Colour it purple and make the font size and style the same as the rest of the text in the activeFileTextbox
 		self.completer.popup().setStyleSheet("""
 		QListView {
-			background-color:purple;
-			border-radius: 2px;
-			color: white;
+			background-color:WHITE;
+			border-radius: 4px;
+			color: black;
+			border-color: black;
 			font-size: 11pt;
 			font-family:calibri,Ubuntu,sans-serif;
 		}
@@ -217,14 +218,15 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 			currentLineText = self.textCursor().block().text() #Get text of current line where cursor is positioned
 
 			#Get suggestions and set model with the completions and the current text put together
-			self.completer.setModel(PyQt5.QtCore.QStringListModel([currentLineText + sug for sug in MachineLearning.autocomplete.suggestAutocomplete(currentLineText)]))
+			self.currentTabs = currentLineText.count("\t")
+			self.completer.setModel(PyQt5.QtCore.QStringListModel([currentLineText.replace("\t","") + sug for sug in MachineLearning.autocomplete.suggestAutocomplete(currentLineText.replace("\t",""))]))
 			self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0)) #Start selecting at top
 			self.completer.popup().setFocusPolicy(PyQt5.QtCore.Qt.NoFocus)
                         
 			#Get where the cursor is and make the completer display in the correct place
 			#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
 			rectangle = self.cursorRect()
-			rectangle.setWidth(self.completer.popup().sizeHintForColumn(0)*4 + self.completer.popup().verticalScrollBar().sizeHint().width())
+			rectangle.setWidth(self.completer.popup().sizeHintForColumn(0)+ 50 + self.completer.popup().verticalScrollBar().sizeHint().width())
 			self.completer.complete(rectangle)
 
 	def fillInCompletion(self,textToComplete):
@@ -232,14 +234,14 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 
 		#Remove the existing data before replacing it with the completed data
 		cursor = self.textCursor();
-		cursor.select(PyQt5.QtGui.QTextCursor.LineUnderCursor) #could change to Word
+		cursor.select(PyQt5.QtGui.QTextCursor.LineUnderCursor)
 		cursor.removeSelectedText()
-		cursor.insertText(textToComplete)
+		cursor.insertText("\t"*self.currentTabs+ textToComplete)
 		self.setTextCursor(cursor)
 		
 	def keyPressEvent(self,event):#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
 		"""Called by Qt when a key is pressed on a codeEditor object"""
-
+		
 		if (self.completer.popup().isVisible()): #a completion is available
 			if event.key() == PyQt5.QtCore.Qt.Key_Tab: #Let the Qcompleter object deal with tab presses
 				event.ignore()
@@ -261,11 +263,12 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #enter/return pressed
 				#reactivate the completer for the new line
 				self.completerActive = True
-				self.completer.popup().show()
 				#update line numbers box and indentation
 				onNewline(self,self.lineNumberBox)
-				#the event has been processed so no-one else needs to process it
-				event.accept()
+				self.displayAutocompleteSuggestions()
+				event.accept() #the event has been processed so no-one else needs to process it
+
+	
 			else: #another unrecognised key was pressed
 				super().keyPressEvent(event) #we can leave the handling of this to the QTextEdit class.
 				
