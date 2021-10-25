@@ -1,6 +1,7 @@
 import PyQt5
 import PyQt5.uic
 import re
+import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -28,9 +29,20 @@ class findReplace(PyQt5.QtWidgets.QWidget):
 		
 	def find(self):
 		"""Called when the user presses the find button or presses enter in the find box. Creates a new generator object using the findInternals method, or advances the existing one to find the next match"""
-		if self.previousFind != self.findBox.toPlainText(): #If the thing we are searching for now is different to the thing we searched for the last time, we can't go to the next match of the previous one; we need to make a new search.
-			self.gen = self.findInternals() #Create a generator which will highlight over successive matches of the target string, and save it to a property of the object so that we can access it in later calls of this method.
-			next(self.gen) #Advance to the first match found.
+		if self.previousFind != self.findBox.toPlainText() or self.findBox.toPlainText() == "": #If the thing we are searching for now is different to the thing we searched for the last time, we can't go to the next match of the previous one; we need to make a new search.
+			try:
+				self.gen = self.findInternals() #Create a generator which will highlight over successive matches of the target string, and save it to a property of the object so that we can access it in later calls of this method.
+				next(self.gen) #Advance to the first match found.
+			except:
+				#https://www.tutorialspoint.com/pyqt/pyqt_qmessagebox.htm
+				dialogue = PyQt5.QtWidgets.QMessageBox()
+				dialogue.setIcon(PyQt5.QtWidgets.QMessageBox.Information)
+				dialogue.setText("Not Found")
+				dialogue.setWindowTitle("Find-Replace")
+				dialogue.setStandardButtons(PyQt5.QtWidgets.QMessageBox.Ok)
+				dialogue.exec_()
+				return
+				
 		else: #We are searching for the same thing as last time so we want to move to the next match
 			try:
 				next(self.gen) #Move the generator on one step
