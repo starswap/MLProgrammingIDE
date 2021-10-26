@@ -1,5 +1,3 @@
-#Could move much of this to separate files
-
 import PyQt5
 import sys
 import json
@@ -366,17 +364,30 @@ class Settings(PyQt5.QtWidgets.QDialog):
 			self.settings = json.loads(f.read())
 			f.close()
 		except (json.decoder.JSONDecodeError,FileNotFoundError) as e:
-                        print(e)
-                        pass #No settings file
+			print(e)
+			pass #No settings file
+
 		print(self.settings)
 		if not("userProf" in self.settings):
 		    self.settings["userProf"] = "Novice"
+		if not("username" in self.settings):
+		    self.settings["username"] = "Anonymous Wombat"
 
+		self.ui.runCommand.setText(self.settings["pythonCommand"])
+		self.ui.userName.setText(self.settings["username"])
+		
 		self.save()
+
 	def save(self):
+		if (self.ui.runCommand.text() != ""):
+			self.settings["pythonCommand"] = self.ui.runCommand.text()
+		if (self.ui.userName.text() != ""):
+			self.settings["username"] = self.ui.userName.text()
+			
 		f = open(os.path.join(str(getCWD()),".mlidesettings"),"w")
 		f.write(json.dumps(self.settings))
 		f.close()
+		
 	def closeEvent(self, event):
 		self.save()
 		event.accept()
@@ -654,10 +665,11 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		elif sender == self.activeFileTextbox: #right clicked inside the active file textbox
 			actions.append(("Paste",self.activeFileTextbox.paste))
 			actions.append(("Display complexity analyser results",self.actionDisplay_Complexity_Analyser_Results.trigger))
-			actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))			
-			if self.activeFileTextbox.textCursor().hasSelection(): #We can only do these actions if something is highlighted
+			actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))
+			actions.append(("Generate code comments",self.applyCommentGeneration))
+
+			if self.activeFileTextbox.textCursor().hasSelection(): #We can only do this actions if something is highlighted
 				actions.append(("Copy",self.activeFileTextbox.copy))
-				actions.append(("Generate code comments",ApplyCommentGeneration))
 			
 		for text,call in actions: #Now we are going to actually create and add all the actions to the menu
 			action = PyQt5.QtWidgets.QAction(menu) #Create a new QAction which is a menu option that calls a function when trigered
@@ -666,6 +678,45 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			menu.addAction(action) #and add to menu
 
 		menu.exec_(self.sender().mapToGlobal(point)) #Puts the menu on screen at the right point (mapToGlobal converts the position in the sender object to a global position so that the position at which the menu displays (arg to exec_) is where the user right clicked)
+
+	def applyCommentGeneration(self):
+		"""Utility procedure which runs on right click and in some other ways to generate basic file-level comments and also call the GenerateNextCharacterOfComment() subroutine for each subroutine in the user's code to get ML-generated code comments. """
+
+                #Get the user's code content from the active file textbox, and add some preliminary comments as a header at the top of the file.
+		textContent = ("#Comments Automatically generated at " + str(datetime.now()) +
+			       "\n#Author "+ self.settings.settings["username"] +
+			       "\n#Elegance Score: " + str(self.EleganceHexagon.score) +
+			       "\n#Efficacy Score: " + str(self.EfficacyHexagon.score) +
+			       "\n#Efficiency Score: " + str(self.EfficiencyHexagon.score) +
+			       "\n#Readability Score: " + str(self.ReadabilityHexagon.score) + "\n\n" + 
+			       self.activeFileTextbox.toPlainText()) #...not forgetting to include the actual code afterwards so that this isn't lost
+
+		self.activeFileTextbox.completerActive = False #Turn off the autocomplete while we type in the comments
+		self.activeFileTextbox.setPlainText(textContent) #Fill in the comments
+		self.activeFileTextbox.moveCursor(PyQt5.QtGui.QTextCursor.End)#Move the cursor to the end of the file once the data has been pasted in
+		self.activeFileTextbox.completerActive = True #Turn autocomplete back on so the user can make use of it again.
+
+
+##            matches, lines, captureGroups = code.regularExpressionWithCaptureGroupsAndLines("/def +(.+):\n([\t ]+(.+)\n)+/g") //Find function definitions.
+##            for i = 0 to length(matches) do
+##                comment = ""
+##                matrix = StringToMatrixForPrediction(matches[i])
+##                nextProbs, formerA = GenerateNextCharacterOfComment(matrix,True,LinearAlgebraLibrary.zeroMatrix((HIDDEN_LAYER_NODES,1)),W_a,W_y,b_a,b_y)
+##                while True == True do
+##                 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!'£$%^&*()[]-=+_;:@~#,<\n.>/?\\|\" "
+##                   sort chars based on nextProbs
+##                   nextChar = chars[0]
+##                   comment += nextChar
+##                   if nextChar == "\n" then
+##                      break
+##                   endif 
+##                   nextProbs, formerA = GenerateNextCharacterOfComment(matrix,False,formerA,W_a,W_y,b_a,b_y)           
+##                endwhile
+##                ActiveFileTextbox.insert(lines[i]+1,'"""'+comment+'"""')//Insert the generated docstring below the function header.
+##            endfor
+##        endfunction
+
+
 
 	def suggestSyntaxFeatures(self,codeToSuggestOn):
 		"""Take the regex patterns defined in Syntax_Rules.txt and apply them to the user's code. In case of a match, create a comment reminding the user of what they could do to improve their code."""
@@ -832,14 +883,17 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
                 
 
 	
-def ApplyCommentGeneration():
-	pass
+
+
+	
 def setClipboardText(text):
 	global app
 	app.clipboard().setText(text)
 
 #Source: https://realpython.com/python-pyqt-qthread/
 class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
+
+        #Create signals used to communicate with other threads
 	finished = PyQt5.QtCore.pyqtSignal()
 	complexityDone = PyQt5.QtCore.pyqtSignal(str)
 	makeComment = PyQt5.QtCore.pyqtSignal(str,str)
@@ -1002,14 +1056,15 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 		compl = self.prepareComplexity()
 		self.mainWindow.EfficiencyHexagon.getScore(compl)
 		self.findFasterCodeOnline()
-##                SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
-##		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
-##		self.scoreComputeTimer.timeout.connect(self.EfficiencyHexagon.getScore)
-##		self.scoreComputeTimer.timeout.connect(lambda : self.EfficacyHexagon.getScore(self.currentProject))
-##		self.scoreComputeTimer.timeout.connect(lambda : self.EleganceHexagon.getScore(self.currentProject,len(self.comments)))
-##		self.scoreComputeTimer.timeout.connect(lambda : self.ReadabilityHexagon.getScore(self.currentProject))
-##		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
-##		
+		
+		SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
+		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
+		self.scoreComputeTimer.timeout.connect(self.mainWindow.EfficiencyHexagon.getScore)
+		self.scoreComputeTimer.timeout.connect(lambda : self.mainWindow.EfficacyHexagon.getScore(self.currentProject))
+		self.scoreComputeTimer.timeout.connect(lambda : self.mainWindow.EleganceHexagon.getScore(self.currentProject,len(self.comments)))
+		self.scoreComputeTimer.timeout.connect(lambda : self.mainWindow.ReadabilityHexagon.getScore(self.currentProject))
+		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
+		
 		self.finished.emit()
 
 

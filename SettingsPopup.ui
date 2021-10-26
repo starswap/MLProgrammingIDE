@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,1,0">
    <item>
     <widget class="QLabel" name="label">
      <property name="font">
@@ -47,6 +47,24 @@
       <widget class="QLineEdit" name="runCommand">
        <property name="placeholderText">
         <string>e.g. python3</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>User Name (to be included in programs)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="userName">
+       <property name="placeholderText">
+        <string>e.g. Joe Bloggs</string>
        </property>
       </widget>
      </item>
