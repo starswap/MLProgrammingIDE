@@ -20,6 +20,9 @@ from Objects.ProjectObject import Project
 from Objects.UnitTestObject import UnitTest
 
 from UI.CommentObject import Comment
+
+from MachineLearning import comments
+
 import UI.baseUI
 import UI.EnterUnitTests
 import UI.UnitTestResults
@@ -331,14 +334,14 @@ class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
 		
 
 def getCWD():
-        #Source: https://www.codegrepper.com/code-examples/python/python+pyinstaller+get+path+of+executable
-        # determine if the application is a frozen `.exe` (e.g. pyinstaller --onefile) 
-        if getattr(sys, 'frozen', False):
-                application_path = os.path.dirname(sys.executable)
-        # or a script file (e.g. `.py` / `.pyw`)
-        elif __file__:
-                application_path = os.path.dirname(__file__)
-        return application_path
+	#Source: https://www.codegrepper.com/code-examples/python/python+pyinstaller+get+path+of+executable
+	# determine if the application is a frozen `.exe` (e.g. pyinstaller --onefile) 
+	if getattr(sys, 'frozen', False):
+		application_path = os.path.dirname(sys.executable)
+	# or a script file (e.g. `.py` / `.pyw`)
+	elif __file__:
+		application_path = os.path.dirname(__file__)
+	return application_path
 		
 
 
@@ -460,27 +463,27 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.activeFileTextbox.lineNumberBox = self.lineNumberBox
 		
 	def createCurrentProjectByOpening(self):
-                mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
-                try:
-                        f = open(mlideproj,"r")
-                        content = f.read()
-                        js = json.loads(content)
-                        f.close()
-                        if js["directoryPath"] != os.path.split(mlideproj)[0]: #User has moved project directory from somewhere else so we need to updateit.
-                                f = open(mlideproj,"w")
-                                print(repr(js["directoryPath"])[1:-1])
-                                updated = content.replace(repr(js["directoryPath"])[1:-1],repr(os.path.split(mlideproj)[0])[1:-1])
-                                #print(updated)
-                                f.write(updated)
-                                f.close()
-                                        
-                                        
-                        self.currentProject = Project(mlideproj,True,self)
-                        self.setUpActions()
-                except FileNotFoundError:
-                        print("File issue")
-                        pass
-                
+		mlideproj = PyQt5.QtWidgets.QFileDialog.getOpenFileName(directory=str(Path.home()),caption="Select an existing project (.mlideproj) to open")[0]
+		try:
+			f = open(mlideproj,"r")
+			content = f.read()
+			js = json.loads(content)
+			f.close()
+			if js["directoryPath"] != os.path.split(mlideproj)[0]: #User has moved project directory from somewhere else so we need to updateit.
+				f = open(mlideproj,"w")
+				print(repr(js["directoryPath"])[1:-1])
+				updated = content.replace(repr(js["directoryPath"])[1:-1],repr(os.path.split(mlideproj)[0])[1:-1])
+				#print(updated)
+				f.write(updated)
+				f.close()
+					
+					
+			self.currentProject = Project(mlideproj,True,self)
+			self.setUpActions()
+		except FileNotFoundError:
+			print("File issue")
+			pass
+		
 	def createCurrentProjectByNew(self):
 		result = PyQt5.QtWidgets.QInputDialog.getText(self, "New Project","Please enter the name of the new project:")
 		if result[1] == True:
@@ -682,9 +685,9 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def applyCommentGeneration(self):
 		"""Utility procedure which runs on right click and in some other ways to generate basic file-level comments and also call the GenerateNextCharacterOfComment() subroutine for each subroutine in the user's code to get ML-generated code comments. """
 
-                #Get the user's code content from the active file textbox, and add some preliminary comments as a header at the top of the file.
-		textContent = ("#Comments Automatically generated at " + str(datetime.now()) +
-			       "\n#Author "+ self.settings.settings["username"] +
+		#Get the user's code content from the active file textbox, and add some preliminary comments as a header at the top of the file.
+		textContent = ("#(Comments automatically generated at " + str(datetime.now()) + ")" +
+			       "\n#Author: "+ self.settings.settings["username"] +
 			       "\n#Elegance Score: " + str(self.EleganceHexagon.score) +
 			       "\n#Efficacy Score: " + str(self.EfficacyHexagon.score) +
 			       "\n#Efficiency Score: " + str(self.EfficiencyHexagon.score) +
@@ -692,30 +695,29 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			       self.activeFileTextbox.toPlainText()) #...not forgetting to include the actual code afterwards so that this isn't lost
 
 		self.activeFileTextbox.completerActive = False #Turn off the autocomplete while we type in the comments
-		self.activeFileTextbox.setPlainText(textContent) #Fill in the comments
+
+                #ML part
+		matches = re.finditer("((def +(.+):\n)([\t ]+(.+)\n)+)",textContent,flags=re.MULTILINE) #Find all functions
+		delta = 0 #Will store the impact inserting previous comments has had on indices into the textContent string, so that we can always insert in the right place
+		for mtch in matches: #For every subroutine
+			comment = comments.getAlgorithmClassificationComment(comments.stringToMatrixForPrediction(mtch.group(1))) #Get the suggested comment from the text of the subroutine using ML
+			insertPos = delta + mtch.span(2)[1] #Get position of end of function header / start of where docstring can go.
+			textContent = textContent[:insertPos] + '\t"""' + comment + '"""\n' + textContent[insertPos:] #Insert the generated docstring below the function header.
+			delta += len(comment) + 8 #Amount by which this insertion changed the indices
+			
+		self.activeFileTextbox.setPlainText(textContent) #Fill in the comments		
 		self.activeFileTextbox.moveCursor(PyQt5.QtGui.QTextCursor.End)#Move the cursor to the end of the file once the data has been pasted in
 		self.activeFileTextbox.completerActive = True #Turn autocomplete back on so the user can make use of it again.
 
-
-##            matches, lines, captureGroups = code.regularExpressionWithCaptureGroupsAndLines("/def +(.+):\n([\t ]+(.+)\n)+/g") //Find function definitions.
-##            for i = 0 to length(matches) do
-##                comment = ""
-##                matrix = StringToMatrixForPrediction(matches[i])
-##                nextProbs, formerA = GenerateNextCharacterOfComment(matrix,True,LinearAlgebraLibrary.zeroMatrix((HIDDEN_LAYER_NODES,1)),W_a,W_y,b_a,b_y)
-##                while True == True do
-##                 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!'£$%^&*()[]-=+_;:@~#,<\n.>/?\\|\" "
-##                   sort chars based on nextProbs
-##                   nextChar = chars[0]
-##                   comment += nextChar
-##                   if nextChar == "\n" then
-##                      break
-##                   endif 
-##                   nextProbs, formerA = GenerateNextCharacterOfComment(matrix,False,formerA,W_a,W_y,b_a,b_y)           
-##                endwhile
-##                ActiveFileTextbox.insert(lines[i]+1,'"""'+comment+'"""')//Insert the generated docstring below the function header.
-##            endfor
-##        endfunction
-
+        	#Make a popup letting the user know that the comment generation they requested has occurred.
+		#Source: https://www.tutorialspoint.com/pyqt/pyqt_qmessagebox.htm
+		dialogue = PyQt5.QtWidgets.QMessageBox()
+		dialogue.setIcon(PyQt5.QtWidgets.QMessageBox.Information)
+		dialogue.setText("Comments automatically generated :) Please check accuracy manually!")
+		dialogue.setWindowTitle("Algorithm Identification Comment Generation")
+		dialogue.setStandardButtons(PyQt5.QtWidgets.QMessageBox.Ok)
+		dialogue.exec_()
+		
 
 
 	def suggestSyntaxFeatures(self,codeToSuggestOn):
@@ -810,10 +812,10 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		"""Opens the tutorial in the user's default browser."""
 		TUTORIAL_FILE_NAME = "Tutorial/tutorial.html"
 		PyQt5.QtGui.QDesktopServices.openUrl(PyQt5.QtCore.QUrl.fromLocalFile(TUTORIAL_FILE_NAME))
-                
+		
 
-        
-                
+	
+		
 class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 	def __init__(self, IDEWindow, parent=None):
 		super(LoadScreen, self).__init__(parent)
@@ -866,21 +868,21 @@ class LoadScreen(PyQt5.QtWidgets.QMainWindow, UI.LoadScreen.Ui_MainWindow):
 		self.IDEWindow.actionNew_Project.trigger()
 
 	def getUserLevelResource(self,userProficiencyLevelString):
-                """Uses the saved user proficiency/skill level to extract a resource from the Geeks4Geeks website, at the correct level for this user, to display in the user's web browser."""
-                userProfMatchups = {"Novice":"basic","Student":"easy","Adept":"medium","Veteran":"hard","Master":"expert"} #Conversion between my skill levels and G4G article difficulty levels
+		"""Uses the saved user proficiency/skill level to extract a resource from the Geeks4Geeks website, at the correct level for this user, to display in the user's web browser."""
+		userProfMatchups = {"Novice":"basic","Student":"easy","Adept":"medium","Veteran":"hard","Master":"expert"} #Conversion between my skill levels and G4G article difficulty levels
 
-                #Search for articles in Python at the correct level, and choose a random page of the results from 1 to 10.
-                pageText = requests.get("https://www.geeksforgeeks.org/"+userProfMatchups[userProficiencyLevelString]+"/python/" + str(random.randint(1,10))).text #all levels have at least 10 pages of articles.
+		#Search for articles in Python at the correct level, and choose a random page of the results from 1 to 10.
+		pageText = requests.get("https://www.geeksforgeeks.org/"+userProfMatchups[userProficiencyLevelString]+"/python/" + str(random.randint(1,10))).text #all levels have at least 10 pages of articles.
 
-                #Find all python articles linked.
-                html = bs4.BeautifulSoup(pageText) 
-                articles = html.find("div",{"class":"articles-list"}).findChildren("div",{"class":"articles-list_item"})
+		#Find all python articles linked.
+		html = bs4.BeautifulSoup(pageText) 
+		articles = html.find("div",{"class":"articles-list"}).findChildren("div",{"class":"articles-list_item"})
 
-                #Select a random one and open it in the user's browser.
-                articleURL = random.choice(articles).findChild().findChild().findChild()["href"]
-                PyQt5.QtGui.QDesktopServices.openUrl(PyQt5.QtCore.QUrl(articleURL)) #Opens a random resource from the ones the hexagon has set as appropriate in the user's default browser
-                
-                
+		#Select a random one and open it in the user's browser.
+		articleURL = random.choice(articles).findChild().findChild().findChild()["href"]
+		PyQt5.QtGui.QDesktopServices.openUrl(PyQt5.QtCore.QUrl(articleURL)) #Opens a random resource from the ones the hexagon has set as appropriate in the user's default browser
+		
+		
 
 	
 
@@ -893,7 +895,7 @@ def setClipboardText(text):
 #Source: https://realpython.com/python-pyqt-qthread/
 class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 
-        #Create signals used to communicate with other threads
+	#Create signals used to communicate with other threads
 	finished = PyQt5.QtCore.pyqtSignal()
 	complexityDone = PyQt5.QtCore.pyqtSignal(str)
 	makeComment = PyQt5.QtCore.pyqtSignal(str,str)
