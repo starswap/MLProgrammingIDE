@@ -1,2 +1,2 @@
 git pull to get uptodate
-py -m PyInstaller --onefile --noconsole --icon=MlIcon.ico MLIDE.py
+py -m PyInstaller --onefile --icon=MlIcon.ico MLIDE.py

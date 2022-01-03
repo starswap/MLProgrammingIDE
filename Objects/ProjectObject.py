@@ -65,6 +65,8 @@ class Project():
                         try:
                                 for test in projectFileContents["unitTests"]:
                                         self.unitTests.append(UnitTestObject.UnitTest(test["functionName"],test["inputValues"],test["outputValues"],test["types"],test["inputConstraints"],test["functionFileName"],self.associatedWindow))
+                                        print("ggg")
+                                        print(self.unitTests[-1].inputValues)
                         except KeyError:
                                 pass		
                         print("name:" + self.name)
@@ -162,7 +164,7 @@ class Project():
 			f.close()
 		
 		#Update the title of the window so that the user knows when the project was last saved.
-		self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.name + " - last saved at " + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
+		self.associatedWindow.setWindowTitle("ML Programming IDE - " + self.directoryPath + " - last saved at " + str(datetime.now().strftime("%H:%M:%S"))) #https://www.programiz.com/python-programming/datetime/current-time
 
 	def switchToFile(self,itemClicked):
 		"""Switches the currently active file"""

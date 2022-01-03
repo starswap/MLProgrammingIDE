@@ -35,6 +35,10 @@ class UnitTest():
 	def executeFunction(self,arguments):
 		#https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 		#https://realpython.com/primer-on-jinja-templating/
+
+#		print("ah")
+#		print(arguments)
+		
 		TEMPLATE = """import importlib.util
 spec = importlib.util.spec_from_file_location("moduleToTest", r"{{filePath}}")
 codeToTest = importlib.util.module_from_spec(spec)
@@ -44,15 +48,17 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 		for i in range(len(arguments)):
 			if type(arguments[i]) == str:
 				arguments[i] = "'" + arguments[i] + "'"
-		filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=self.functionFileName,functionToTest=self.functionName,arguments=arguments) #Fill in the template code so that the function executed is the user's one
+#		print(self.functionFileName)
 		
 		#Write the filled in template out to a file which we can then run to execute it
 		#Template code source: https://stackoverflow.com/questions/8577137/how-can-i-create-a-tmp-file-in-python
 		fd, path = tempfile.mkstemp()
 		try:
+			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=os.path.join(self.associatedWindow.currentProject.directoryPath,self.functionFileName),functionToTest=self.functionName,arguments=arguments) #Fill in the template code so that the function executed is the user's one                
 			with os.fdopen(fd, 'w') as g:
 				g.write(filledInTemplate)
 
+#			print(filledInTemplate)
 			#Run the file and get the output
 			try:
 				tick = time.time() #start time
@@ -78,10 +84,14 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 		results = [] #list of bools - True if the test was successful and the output matched the expected output, False otherwise
 		outputs = [] #list of string - the returned values from the function the user has written that we are testing
 		times = [] #list of floats - execution times
+		#print("sss")
+		#print(self.inputValues)
 		for i,oneTest in enumerate(self.inputValues): #For every test to run
 			output,time = self.executeFunction(oneTest) #Execute the function on the correct input, and get the function's output and the time taken.
-
-			if output == self.outputValues[i]: #Check if the actual output matches the expected output for this test.
+			
+			#print(type(output))
+		#	print(type(self.outputValues[i]))
+			if output == str(self.outputValues[i]): #Check if the actual output matches the expected output for this test.
 				result = True
 			else:
 				result = False
@@ -95,8 +105,9 @@ print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor 
 	
 	def generateMockInput(self,sizeConstraint):
 		""" Uses the type and constraint information stored about user functions by the unit test object in order to generate realistic input to the function, of a given length, which can be used to examine the complexity of the function. The sizeConstraint argument gives an idea of how big the input should be and represents the n value in big o notation. The way it is used depends on the type of input required."""
-		#FUTURE RELEASE: Currently we only support complexity analysis on the first input of a function. 
-		print(self.inputConstraints)
+		#FUTURE RELEASE: Currently we only support complexity analysis on the first input of a function.
+		
+		#print(self.inputConstraints)
 		if self.types[0] == "Int" or self.types[0] == "Float": 
 			mini = -100000000 #Initialise valid minimum and maximum values
 			maxi = 100000000

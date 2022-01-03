@@ -221,7 +221,7 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 			self.currentTabs = currentLineText.count("\t")
 			self.completer.setModel(PyQt5.QtCore.QStringListModel([currentLineText.replace("\t","") + sug for sug in MachineLearning.autocomplete.suggestAutocomplete(currentLineText.replace("\t",""))]))
 			self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0)) #Start selecting at top
-			self.completer.popup().setFocusPolicy(PyQt5.QtCore.Qt.NoFocus)
+			#self.completer.popup().setFocusPolicy(PyQt5.QtCore.Qt.NoFocus)
                         
 			#Get where the cursor is and make the completer display in the correct place
 			#Implemented with help from https://doc.qt.io/qt-5/qtwidgets-tools-customcompleter-example.html (C++)
@@ -243,9 +243,9 @@ class codeEditor(PyQt5.QtWidgets.QTextEdit):
 		"""Called by Qt when a key is pressed on a codeEditor object"""
 		
 		if (self.completer.popup().isVisible()): #a completion is available
-			if event.key() == PyQt5.QtCore.Qt.Key_Tab: #Let the Qcompleter object deal with tab presses
-				event.ignore()
-				return
+		#	if event.key() == PyQt5.QtCore.Qt.Key_Tab: #Let the Qcompleter object deal with tab presses
+		#		event.ignore()
+		#		return
 			if event.key() == PyQt5.QtCore.Qt.Key_Enter or event.key() == PyQt5.QtCore.Qt.Key_Return: #Let the Qcompleter object deal with return/enter presses...
 					#...but make sure to deactivate the completer so that we don't get multiple completions on the same line
 					self.completer.popup().hide()

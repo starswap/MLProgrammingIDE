@@ -171,14 +171,15 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 					thisInput = [] #Prepare a list to store one test's worth of input 
 					for k in range(table.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
 						try:
-							thisInput.append(table.item(i,k).text()) #Get the test input
+						#	print(table.item(i,k).text())
+							thisInput.append(literal_eval(table.item(i,k).text())) #Get the test input
 						except AttributeError: #Blank cell...
 							thisInput.append("") #... so use ""
 					inputList.append(thisInput) #Add all the inputs we just collected to the overall list of input lists 
 	
 					#Grab the output for the current test
 					try:
-						outputList.append(table.item(i,table.columnCount()-1).text()) #always appears in the last column of the table
+						outputList.append(literal_eval(table.item(i,table.columnCount()-1).text())) #always appears in the last column of the table
 					except AttributeError: #Blank cell so use ""
 						outputList.append("")
 						
@@ -193,8 +194,8 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 	def showExistingTests(self):
 		"""Gets the existing tests from the current project and shows them to the user"""
 		
-		print("a")
-		print(self.MainIDE.currentProject.unitTests)
+	#	print("existing Tests")
+	#	print(self.MainIDE.currentProject.unitTests[0].inputValues)
 		for test in self.MainIDE.currentProject.unitTests: #Loop over all tests that were previously created on the project; those that were saved to the project file.
 			self.ui.FunctionName.setText(test.functionName) # Simulating the user typing in this stuff again is the quickest way in terms of providing code reuse.
 			self.ui.FunctionFileName.setText(test.functionFileName)
@@ -214,10 +215,14 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 			#Now all remaining rows after 1 and 2 simply represent tests. 
 			for i in range(2,newTable.rowCount()): #For each test
 				for k in range(newTable.columnCount()-1): #For every column in the current row, i.e. for every cell in the current test
-						newTable.setItem(i,k,PyQt5.QtWidgets.QTableWidgetItem(test.inputValues[i-2][k])) #Set the test input to show on screen in the table
-			
+						#print("hee")
+						#print(test.inputValues[i-2][k])
+						#print(i)
+						#print(k)
+						newTable.setItem(i,k,PyQt5.QtWidgets.QTableWidgetItem(str(test.inputValues[i-2][k]))) #Set the test input to show on screen in the table
+						#print("bebop" + newTable.item(i,k).text())
 				#Grab the output for the current test and display it
-				newTable.setItem(i,newTable.columnCount()-1,PyQt5.QtWidgets.QTableWidgetItem(test.outputValues[i-2])) #always appears in the last column of the table
+				newTable.setItem(i,newTable.columnCount()-1,PyQt5.QtWidgets.QTableWidgetItem(str(test.outputValues[i-2]))) #always appears in the last column of the table
 		self.ui.FunctionName.setText("")
 		self.ui.FunctionFileName.setText("")	
 		self.ui.NumArguments.setValue(1)
@@ -285,9 +290,9 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 			
 			for testNo in range(len(func.inputValues)): # For every test that we need to execute against the function we are testing
 				for argNo in range(func.numberOfInputs): #For every argument the function has 
-					newFunctionTable.setItem(testNo,argNo,PyQt5.QtWidgets.QTableWidgetItem(func.inputValues[testNo][argNo])) #Set the test input to show on screen in the table
+					newFunctionTable.setItem(testNo,argNo,PyQt5.QtWidgets.QTableWidgetItem(str(func.inputValues[testNo][argNo]))) #Set the test input to show on screen in the table
 				
-				newFunctionTable.setItem(testNo,func.numberOfInputs,PyQt5.QtWidgets.QTableWidgetItem(func.outputValues[testNo])) #Show the expected output value in the table
+				newFunctionTable.setItem(testNo,func.numberOfInputs,PyQt5.QtWidgets.QTableWidgetItem(str(func.outputValues[testNo]))) #Show the expected output value in the table
 				newFunctionTable.setItem(testNo,func.numberOfInputs+1,PyQt5.QtWidgets.QTableWidgetItem(outputs[testNo])) #Show the actual output value in the table
 				
 				emoticon = PyQt5.QtWidgets.QTableWidgetItem(EMOJI[results[testNo]]) #Create a table widget item we can later put into the table to represent the pass/fail. We don't add it straight away as we want to style it based on whether or not the test had a positive result
@@ -328,7 +333,7 @@ class ComplexityAnalysisPopup(PyQt5.QtWidgets.QDialog):
 		ctrlW.activated.connect(self.close)
 
 	def disp(self,text):
-		print("aa")
+		#print("aa")
 		self.ui.resultsTextBox.setHtml(text)
 
 		
@@ -370,7 +375,7 @@ class Settings(PyQt5.QtWidgets.QDialog):
 			print(e)
 			pass #No settings file
 
-		print(self.settings)
+		#print(self.settings)
 		if not("userProf" in self.settings):
 		    self.settings["userProf"] = "Novice"
 		if not("username" in self.settings):
@@ -471,7 +476,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			f.close()
 			if js["directoryPath"] != os.path.split(mlideproj)[0]: #User has moved project directory from somewhere else so we need to updateit.
 				f = open(mlideproj,"w")
-				print(repr(js["directoryPath"])[1:-1])
+				#print(repr(js["directoryPath"])[1:-1])
 				updated = content.replace(repr(js["directoryPath"])[1:-1],repr(os.path.split(mlideproj)[0])[1:-1])
 				#print(updated)
 				f.write(updated)
@@ -481,7 +486,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			self.currentProject = Project(mlideproj,True,self)
 			self.setUpActions()
 		except FileNotFoundError:
-			print("File issue")
+			#print("File issue")
 			pass
 		
 	def createCurrentProjectByNew(self):
@@ -490,6 +495,9 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			self.currentProject = Project(result[0],False,self)
 			self.setUpActions()
 			self.actionNew_File.trigger() #The user first has to create a new file
+		self.activeFileTextbox.setFocus()
+
+		
 			
 	def toggleFindReplace(self):
 		"""Shows/hides the find/replace dialogue when the user presses ctrl-F or find/replace in the menu"""
@@ -583,6 +591,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	
 		#Setup right click menus:
 		self.listOfFilesMenu.customContextMenuRequested.connect(self.displayRightClickMenu)
+		self.runCommandBox.customContextMenuRequested.connect(self.displayRightClickMenu)		
 		self.activeFileTextbox.customContextMenuRequested.connect(self.displayRightClickMenu)
 		self.EfficiencyHexagon.customContextMenuRequested.connect(self.displayRightClickMenu)		
 		self.EleganceHexagon.customContextMenuRequested.connect(self.displayRightClickMenu)
@@ -612,25 +621,44 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 		self.actionEnter_Unit_Tests.triggered.connect(self.showUnitTestEntry)
 		self.actionDisplay_Test_Results.triggered.connect(self.showTestResults)
 		self.activeFileTextbox.textChanged.connect(self.onChangeText)
-		self.runCommandBox.textChanged.connect(self.onChangeText)		
+	#	self.runCommandBox.textChanged.connect(self.onChangeText)		
 
 		#Source: https://realpython.com/python-pyqt-qthread/
 		#Prepare the thread to run the ML components.
-		self.thread = PyQt5.QtCore.QThread()
-		self.updateScores = UpdateScoresAndComplexity(self)
-		self.updateScores.moveToThread(self.thread)
-		self.thread.started.connect(self.updateScores.update)
-		self.updateScores.complexityDone.connect(self.complexityAnalysisPopup.disp)
-		self.updateScores.finished.connect(self.thread.quit)
-		self.updateScores.finished.connect(self.updateScores.deleteLater)
-		self.thread.finished.connect(self.thread.deleteLater)
-		self.updateScores.makeComment.connect(lambda text, code : self.makeComment(text,self.commentsPane,code))
-		self.thread.start()
+
+		self.threadify()
+		COMPLEXITY_UPDATE_FREQUENCY = 300000 #MAINTENANCE : This is the number of milliseconds between updates of the complexity analyser
+		self.complexityTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
+		self.complexityTimer.timeout.connect(self.threadify)
+		self.complexityTimer.start(COMPLEXITY_UPDATE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
+
 
 		USER_PROF_UPDATE = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the user proficiency level.
 		self.userProfTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user
 		self.userProfTimer.timeout.connect(self.updateUserProficiencyLevel)
 		self.userProfTimer.start(USER_PROF_UPDATE)
+
+		
+		SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
+		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
+	#	#self.scoreComputeTimer.timeout.connect(self.mainWindow.EfficiencyHexagon.getScore)
+		self.scoreComputeTimer.timeout.connect(lambda : self.EfficacyHexagon.getScore(self.currentProject))
+		self.scoreComputeTimer.timeout.connect(lambda : self.EleganceHexagon.getScore(len(self.comments),self.currentProject))
+		self.scoreComputeTimer.timeout.connect(lambda : self.ReadabilityHexagon.getScore(self.currentProject))
+		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
+		
+
+	def threadify(self):
+		self.threadR = PyQt5.QtCore.QThread()
+		self.updateScores = UpdateScoresAndComplexity(self)
+		self.updateScores.moveToThread(self.threadR)
+		self.threadR.started.connect(self.updateScores.update)
+		self.updateScores.complexityDone.connect(self.complexityAnalysisPopup.disp)
+		self.updateScores.finished.connect(self.threadR.quit)
+		self.updateScores.finished.connect(self.updateScores.deleteLater)
+		self.threadR.finished.connect(self.threadR.deleteLater)
+		self.updateScores.makeComment.connect(lambda text, code : self.makeComment(text,self.commentsPane,code))
+		self.threadR.start()
 
 	def onMoveCursor(self):
 		pass #breaks undo/redo
@@ -670,10 +698,16 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			actions.append(("Display complexity analyser results",self.actionDisplay_Complexity_Analyser_Results.trigger))
 			actions.append(("Display unit test results",self.actionDisplay_Test_Results.trigger))
 			actions.append(("Generate code comments",self.applyCommentGeneration))
+			actions.append(("Paste project path",lambda : sender.insertPlainText(self.currentProject.directoryPath)))
 
 			if self.activeFileTextbox.textCursor().hasSelection(): #We can only do this actions if something is highlighted
 				actions.append(("Copy",self.activeFileTextbox.copy))
-			
+
+		if sender == self.runCommandBox:
+			actions.append(("Paste project path",lambda : sender.insert(self.currentProject.directoryPath)))
+			actions.append(("Copy",self.runCommandBox.copy))
+			actions.append(("Paste",self.runCommandBox.paste))
+				
 		for text,call in actions: #Now we are going to actually create and add all the actions to the menu
 			action = PyQt5.QtWidgets.QAction(menu) #Create a new QAction which is a menu option that calls a function when trigered
 			action.setText(text) #set the corresponding text for the option
@@ -771,8 +805,8 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 	def closeEvent(self, event):
 		self.settings.save()
 		try:
-			self.thread.exit()
-			self.thread.deleteLater()
+			#]self.threadR.exit()
+			self.threadR.deleteLater()
 		except RuntimeError:
 			pass #It already got deleted earlier
 		event.accept()
@@ -801,7 +835,7 @@ class MLIDE(PyQt5.QtWidgets.QMainWindow, UI.baseUI.Ui_MainWindow):
 			dialogue.setIconPixmap(PyQt5.QtGui.QPixmap(":/LevelIcons/"+averageLevelString+".png").scaledToWidth(64)) #Set the correct icon and size for the message box
 			dialogue.setWindowTitle("Congratulations...")
 			dialogue.show()
-			print('\a')
+		#	print('\a')
 			#Update the saved level
 			self.settings.settings["userProf"] = averageLevelString
 
@@ -904,8 +938,12 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 		self.mainWindow = mainWindow
 		super().__init__()
 
+
 	def EstimateCodeComplexity(self,unitTest):
 		"""Estimates the complexity of the function attached to the unitTest provided"""
+		if len(unitTest.inputValues[0]) != 1:
+			return "Can't compute complexity - only 1 arg functions supported right now sorry"
+		
 		STEPS = 5 #MAINTENANCE: This is the number of different inputs for which the user's function will be tested before we try to get a result
 		ATTEMPTS = 10 #MAINTENANCE: This is the number of times we will run the tests, averaging over each time.
 
@@ -933,7 +971,7 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 				mockInput = unitTest.generateMockInput(i) #This input will be fed to the function and its execution on this input timed
 				totalTime = 0 #Stores the total time taken over all ATTEMPTS 
 				for att in range(ATTEMPTS):
-					output, time = unitTest.executeFunction([str(mockInput)]) #FUTURE RELEASE: Currently only 1-argument functions support complexity estimation
+					output, time = unitTest.executeFunction([mockInput]) #FUTURE RELEASE: Currently only 1-argument functions support complexity estimation
 					if output == "ERROR":
 						return "ERROR IN CODE" #When the code errors there is no way to know about the complexity
 					totalTime += float(time)
@@ -974,7 +1012,7 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 			 complexities.append(result)
 			 outputText += "<li>&nbsp;"+ut.functionName+"(): ≈ &nbsp;<span style='background-color:#c7c7c7;font-family: Consolas,Monospace;'>O(" +result+")</span></li>" #Creates a bullet point with the function name and complexity. nbsp = non breaking space (https://www.wikihow.com/Insert-Spaces-in-HTML)
 			 ut.lastComplexityEstimate = result
-		outputText += "</ul><br>Last computed at "+ str(datetime.now().strftime("%H:%M:%S")) +"<br />Disclaimer - complexity estimated by empirical observation and so may be inaccurate.</p>" #close remaining tags to get correctly formed HTML before showing on screen #https://www.programiz.com/python-programming/datetime/current-time
+		outputText += "</ul><br>Last computed at "+ str(datetime.now().strftime("%H:%M:%S")) +"<br /><br />Complexity analysis can be slow, so is only performed automatically in a background thread every 5 minutes to avoid overloading the computer. To force a re-run of the complexity analyser you should save your project, close the IDE and reopen it.<br /><br />Disclaimer - complexity estimated by empirical observation and so may be inaccurate.</p>" #close remaining tags to get correctly formed HTML before showing on screen #https://www.programiz.com/python-programming/datetime/current-time
 		self.complexityDone.emit(outputText)
 		return complexities
 	
@@ -1021,7 +1059,7 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 						toLookInto = item["href"][7:] #Skip the front bit (/url?q=) to get just the URL of the page we want to visiy
 						if toLookInto in links: #We already got this one
 							continue #...so skip it
-						print(toLookInto)
+					#	print(toLookInto)
 						html2 = requests.get(toLookInto).text #Get the html content of the page that we just found via google
 						requestsMade += 1
 						if requestsMade >= 3*MAXIMUM_URLS:
@@ -1058,21 +1096,12 @@ class UpdateScoresAndComplexity(PyQt5.QtCore.QObject):
 		compl = self.prepareComplexity()
 		self.mainWindow.EfficiencyHexagon.getScore(compl)
 		self.findFasterCodeOnline()
-		
-		SCORE_COMPUTE_FREQUENCY = 5000 #MAINTENANCE : This is the number of milliseconds between updates of the scores. 
-		self.scoreComputeTimer = PyQt5.QtCore.QTimer() #Create a timer to trigger score updates (only updating every few seconds gives time for computations to finish without freezing computer - could be slow - and is less distracting for user) 
-		self.scoreComputeTimer.timeout.connect(self.mainWindow.EfficiencyHexagon.getScore)
-		self.scoreComputeTimer.timeout.connect(lambda : self.mainWindow.EfficacyHexagon.getScore(self.currentProject))
-		self.scoreComputeTimer.timeout.connect(lambda : self.mainWindow.EleganceHexagon.getScore(self.currentProject,len(self.comments)))
-		self.scoreComputeTimer.timeout.connect(lambda : self.mainWindow.ReadabilityHexagon.getScore(self.currentProject))
-		self.scoreComputeTimer.start(SCORE_COMPUTE_FREQUENCY) #Timer will fire the timeout event every SCORE_COMPUTE_FREQUENCY milliseconds
-		
+
 		self.finished.emit()
 
 
-
 app = PyQt5.QtWidgets.QApplication(sys.argv)
-IDE_Window = MLIDE()
+IDE_Window = MLIDE() 
 	
 if len(sys.argv) == 2: #When the user double clicks on an mlideproj file in windows or when they put the file as the cmd line arg this occurs
 	IDE_Window.show()

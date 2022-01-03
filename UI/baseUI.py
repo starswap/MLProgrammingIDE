@@ -49,6 +49,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         font.setKerning(True)
         self.runCommandBox.setFont(font)
+        self.runCommandBox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.runCommandBox.setStyleSheet("")
         self.runCommandBox.setText("")
         self.runCommandBox.setObjectName("runCommandBox")
