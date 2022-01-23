@@ -36,8 +36,8 @@ class UnitTest():
 		#https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 		#https://realpython.com/primer-on-jinja-templating/
 
-#		print("ah")
-#		print(arguments)
+		print("ah")
+		print(arguments)
 		
 		TEMPLATE = """import importlib.util
 spec = importlib.util.spec_from_file_location("moduleToTest", r"{{filePath}}")
@@ -45,16 +45,16 @@ codeToTest = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(codeToTest)
 print(codeToTest.{{functionToTest}}({% for arg in arguments %}{{arg}},{% endfor %}),end="")
 """ #This is the code that will be run to test the user's code. We first import the file containing the user's code and then we run the function with the required arguments. The TEMPLATE variable is in jinja template format as the actual function name, file name and arguments will be filled in at runtime. 
-		for i in range(len(arguments)):
-			if type(arguments[i]) == str:
-				arguments[i] = "'" + arguments[i] + "'"
+	#	for i in range(len(arguments)):
+	#		if type(arguments[i]) == str:
+	#			arguments[i] = "'" + arguments[i] + "'"
 #		print(self.functionFileName)
 		
 		#Write the filled in template out to a file which we can then run to execute it
 		#Template code source: https://stackoverflow.com/questions/8577137/how-can-i-create-a-tmp-file-in-python
 		fd, path = tempfile.mkstemp()
 		try:
-			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=os.path.join(self.associatedWindow.currentProject.directoryPath,self.functionFileName),functionToTest=self.functionName,arguments=arguments) #Fill in the template code so that the function executed is the user's one                
+			filledInTemplate = jinja2.Template(TEMPLATE).render(filePath=os.path.join(self.associatedWindow.currentProject.directoryPath,self.functionFileName),functionToTest=self.functionName,arguments=[repr(a) for a in arguments]) #Fill in the template code so that the function executed is the user's one                
 			with os.fdopen(fd, 'w') as g:
 				g.write(filledInTemplate)
 

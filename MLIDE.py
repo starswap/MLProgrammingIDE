@@ -219,10 +219,10 @@ class UnitTestPopup(PyQt5.QtWidgets.QDialog):
 						#print(test.inputValues[i-2][k])
 						#print(i)
 						#print(k)
-						newTable.setItem(i,k,PyQt5.QtWidgets.QTableWidgetItem(str(test.inputValues[i-2][k]))) #Set the test input to show on screen in the table
+						newTable.setItem(i,k,PyQt5.QtWidgets.QTableWidgetItem(repr(test.inputValues[i-2][k]))) #Set the test input to show on screen in the table
 						#print("bebop" + newTable.item(i,k).text())
 				#Grab the output for the current test and display it
-				newTable.setItem(i,newTable.columnCount()-1,PyQt5.QtWidgets.QTableWidgetItem(str(test.outputValues[i-2]))) #always appears in the last column of the table
+				newTable.setItem(i,newTable.columnCount()-1,PyQt5.QtWidgets.QTableWidgetItem(repr(test.outputValues[i-2]))) #always appears in the last column of the table
 		self.ui.FunctionName.setText("")
 		self.ui.FunctionFileName.setText("")	
 		self.ui.NumArguments.setValue(1)
@@ -290,7 +290,7 @@ class UnitTestResultsPopup(PyQt5.QtWidgets.QDialog):
 			
 			for testNo in range(len(func.inputValues)): # For every test that we need to execute against the function we are testing
 				for argNo in range(func.numberOfInputs): #For every argument the function has 
-					newFunctionTable.setItem(testNo,argNo,PyQt5.QtWidgets.QTableWidgetItem(str(func.inputValues[testNo][argNo]))) #Set the test input to show on screen in the table
+					newFunctionTable.setItem(testNo,argNo,PyQt5.QtWidgets.QTableWidgetItem(repr(func.inputValues[testNo][argNo]))) #Set the test input to show on screen in the table
 				
 				newFunctionTable.setItem(testNo,func.numberOfInputs,PyQt5.QtWidgets.QTableWidgetItem(str(func.outputValues[testNo]))) #Show the expected output value in the table
 				newFunctionTable.setItem(testNo,func.numberOfInputs+1,PyQt5.QtWidgets.QTableWidgetItem(outputs[testNo])) #Show the actual output value in the table
