@@ -99,7 +99,7 @@ class Project():
 		if not(os.path.exists(os.path.join(directory,projectName))):
 			self.directoryPath = os.path.join(directory,projectName) #Have to use os.path.join to work across platforms.
 		else:
-			self.directoryPath = os.path.join(directory,projectName+str(datetime.utcnow()))
+			self.directoryPath = os.path.join(directory,projectName+datetime.utcnow().strftime("%m%d%Y%H%M%S"))
 		os.mkdir(self.directoryPath)
 		
 		self.runCommand = "e.g. python3 " + self.directoryPath + "..."

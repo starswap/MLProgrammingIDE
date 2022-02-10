@@ -169,7 +169,7 @@ def formatCode(code):
 		if len(line) > 0 and line[-1] == ":": #the line endswith a colon so the right indent increases by one in Python for the NEXT line
 			if "if " in line: #If we have an if command, save the current indentation level so we can later jump back to match this on a corresponding elif or else.
 				lastIf = currentIndent
-			elif ("try:") in line: #If we have a try command, save the indent so except and finally can later be matched up
+			elif "try:" in line: #If we have a try command, save the indent so except and finally can later be matched up
 				lastTry = currentIndent
 			
 			currentIndent += 1 
