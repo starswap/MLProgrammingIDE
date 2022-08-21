@@ -1,7 +1,10 @@
 # μλ Programming IDE
 <img src="Tutorial/mainWindow.png" />
 Python Programming IDE for Computer Science A Level NEA project, using artificial intelligence.
-More information available on the <a href="https://htmlpreview.github.io/?https://github.com/starswap/MLProgrammingIDE/blob/main/Tutorial/tutorial.html">tutorial page</a>
+More information available on the <a href="https://htmlpreview.github.io/?https://github.com/starswap/MLProgrammingIDE/blob/main/Tutorial/tutorial.html">tutorial page</a>.
+
+The report for this project is available <a href="https://drive.google.com/file/d/1dQ3htcXWOJ9TJyVygopYAYWSbQifKinz/view?usp=sharing">here</a>.
+
 
 ## Project Structure - Important Files
 - **MLIDE.py** - The "main" source code file for the project - this is the file which imports all of the others.
